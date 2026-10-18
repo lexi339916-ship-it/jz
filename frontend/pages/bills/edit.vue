@@ -89,6 +89,10 @@ function removeBill() {
 
 onLoad(async (options) => {
   billDate.value = today
+  // 支持从日历"为这天记一笔"进入：?date=YYYY-MM-DD 预填日期
+  if (options && options.date && /^\d{4}-\d{2}-\d{2}$/.test(options.date)) {
+    billDate.value = options.date
+  }
   await loadCategories()
   if (options && options.id) {
     editId.value = Number(options.id)
