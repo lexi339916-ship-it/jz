@@ -1,0 +1,33 @@
+{
+  "pages": [
+    {"path": "pages/login/login", "style": {"navigationBarTitleText": "登录", "navigationStyle": "custom"}},
+    {"path": "pages/register/register", "style": {"navigationBarTitleText": "注册"}},
+    {"path": "pages/index/index", "style": {"navigationBarTitleText": "首页", "enablePullDownRefresh": true}},
+    {"path": "pages/bills/list", "style": {"navigationBarTitleText": "账单"}},
+    {"path": "pages/bills/edit", "style": {"navigationBarTitleText": "记一笔"}},
+    {"path": "pages/ai/assistant", "style": {"navigationBarTitleText": "AI 助手"}},
+    {"path": "pages/notes/list", "style": {"navigationBarTitleText": "便签"}},
+    {"path": "pages/notes/edit", "style": {"navigationBarTitleText": "便签详情"}},
+    {"path": "pages/statistics/statistics", "style": {"navigationBarTitleText": "统计分析"}},
+    {"path": "pages/profile/profile", "style": {"navigationBarTitleText": "我的"}}
+  ],
+  "tabBar": {
+    "color": "#7c8595",
+    "selectedColor": "#2f6fed",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {"pagePath": "pages/index/index", "text": "首页", "iconPath": "static/tabbar/home.png", "selectedIconPath": "static/tabbar/home-active.png"},
+      {"pagePath": "pages/bills/list", "text": "账单", "iconPath": "static/tabbar/bill.png", "selectedIconPath": "static/tabbar/bill-active.png"},
+      {"pagePath": "pages/ai/assistant", "text": "AI记账", "iconPath": "static/tabbar/ai.png", "selectedIconPath": "static/tabbar/ai-active.png"},
+      {"pagePath": "pages/notes/list", "text": "便签", "iconPath": "static/tabbar/note.png", "selectedIconPath": "static/tabbar/note-active.png"},
+      {"pagePath": "pages/profile/profile", "text": "我的", "iconPath": "static/tabbar/profile.png", "selectedIconPath": "static/tabbar/profile-active.png"}
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "智能记账与生活便签",
+    "navigationBarBackgroundColor": "#F5F7FB",
+    "backgroundColor": "#F5F7FB"
+  }
+}
