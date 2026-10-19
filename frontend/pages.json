@@ -13,10 +13,10 @@
     {"path": "pages/profile/profile", "style": {"navigationBarTitleText": "我的"}}
   ],
   "tabBar": {
-    "color": "#7c8595",
-    "selectedColor": "#2f6fed",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "color": "#A0A4BE",
+    "selectedColor": "#6C7BF5",
+    "backgroundColor": "#FFFDF8",
+    "borderStyle": "white",
     "list": [
       {"pagePath": "pages/index/index", "text": "首页", "iconPath": "static/tabbar/home.png", "selectedIconPath": "static/tabbar/home-active.png"},
       {"pagePath": "pages/bills/list", "text": "账单", "iconPath": "static/tabbar/bill.png", "selectedIconPath": "static/tabbar/bill-active.png"},
@@ -28,7 +28,7 @@
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "智能记账与生活便签",
-    "navigationBarBackgroundColor": "#F5F7FB",
-    "backgroundColor": "#F5F7FB"
+    "navigationBarBackgroundColor": "#EAF0FF",
+    "backgroundColor": "#F2EEFF"
   }
 }

@@ -37,9 +37,16 @@ async function onRegister() {
 
 <template>
   <view class="page">
+    <view class="header">
+      <text class="page-title">创建你的手账本</text>
+      <text class="sub">记录每一笔，也收藏每一天</text>
+      <text class="deco">✧ ✦ ✧</text>
+    </view>
+
     <view class="card form">
+      <view class="washi" />
       <view class="form-item">
-        <text class="label">用户名（3-20位字母数字）</text>
+        <text class="label">用户名（3-20 位字母数字）</text>
         <input class="input" v-model="username" placeholder="用于登录" placeholder-class="ph" />
       </view>
       <view class="form-item">
@@ -62,9 +69,13 @@ async function onRegister() {
 </template>
 
 <style scoped>
-.page { min-height: 100vh; padding: 40rpx 0; }
-.form { padding: 40rpx 32rpx; }
-.form-item { margin-bottom: 28rpx; }
-.label { display: block; font-size: 26rpx; color: #4a5568; margin-bottom: 12rpx; }
-.ph { color: #b6bdcc; }
+.page { min-height: 100vh; padding: 50rpx 0 60rpx; }
+.header { padding: 0 44rpx; margin-bottom: 10rpx; }
+.header .page-title { margin: 6rpx 0; }
+.sub { display: block; font-size: 25rpx; color: #8A90A8; letter-spacing: 1rpx; }
+.deco { display: block; margin-top: 12rpx; font-size: 22rpx; color: #C7B7F7; letter-spacing: 10rpx; }
+.form { position: relative; margin: 26rpx 40rpx 0; padding: 40rpx 36rpx; }
+.form-item { margin-bottom: 26rpx; }
+.label { display: block; font-size: 25rpx; color: #5A5F78; margin-bottom: 12rpx; letter-spacing: 1rpx; }
+.ph { color: #C3C7DA; }
 </style>

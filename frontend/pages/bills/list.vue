@@ -309,75 +309,75 @@ onShow(() => {
 
 <style scoped>
 .page { padding-bottom: 140rpx; }
-.filter-bar { background: #fff; padding: 20rpx 24rpx 6rpx; }
+.filter-bar { background: #FFFDF8; padding: 20rpx 24rpx 6rpx; }
 .month-row { position: relative; }
 .month-nav { display: flex; align-items: center; justify-content: center; gap: 24rpx; }
-.arrow { font-size: 40rpx; color: #7c8595; padding: 0 20rpx; }
+.arrow { font-size: 40rpx; color: #8A90A8; padding: 0 20rpx; }
 .month { font-size: 30rpx; font-weight: 700; }
 .view-toggle { position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-  font-size: 24rpx; color: #2f6fed; background: #eef3ff; border-radius: 24rpx; padding: 8rpx 22rpx; }
+  font-size: 24rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 28rpx; padding: 8rpx 22rpx; }
 .type-tabs { display: flex; gap: 20rpx; justify-content: center; margin: 18rpx 0 14rpx; }
-.tab { font-size: 26rpx; color: #7c8595; padding: 8rpx 30rpx; border-radius: 26rpx; background: #f5f7fb; }
-.tab-active { color: #fff; background: #2f6fed; font-weight: 600; }
+.tab { font-size: 26rpx; color: #8A90A8; padding: 8rpx 30rpx; border-radius: 30rpx; background: #F6F4FB; }
+.tab-active { color: #fff; background: #6C7BF5; font-weight: 600; }
 
 /* ===== 列表 ===== */
 .list { margin-top: 16rpx; }
-.bill-card { display: flex; align-items: center; background: #fff; margin: 14rpx 24rpx;
-  border-radius: 18rpx; padding: 24rpx 24rpx; box-shadow: 0 6rpx 24rpx rgba(40, 70, 120, .06); }
+.bill-card { display: flex; align-items: center; background: #FFFDF8; margin: 14rpx 24rpx;
+  border-radius: 22rpx; padding: 24rpx 24rpx; box-shadow: 0 6rpx 24rpx rgba(124, 139, 255, .10); }
 .bill-card:active { opacity: .85; }
-.cat-icon { width: 84rpx; height: 84rpx; border-radius: 24rpx; font-size: 40rpx;
+.cat-icon { width: 84rpx; height: 84rpx; border-radius: 28rpx; font-size: 40rpx;
   display: flex; align-items: center; justify-content: center; margin-right: 22rpx; flex-shrink: 0; }
-.cat-icon.sm { width: 68rpx; height: 68rpx; font-size: 32rpx; border-radius: 18rpx; }
+.cat-icon.sm { width: 68rpx; height: 68rpx; font-size: 32rpx; border-radius: 22rpx; }
 .mid { flex: 1; min-width: 0; }
 .mid-top { display: flex; justify-content: space-between; align-items: center; }
 .mid-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10rpx; }
 .cat-name { font-size: 28rpx; font-weight: 600; }
-.remark { font-size: 22rpx; color: #9aa3b5; max-width: 380rpx; overflow: hidden;
+.remark { font-size: 22rpx; color: #A6AAC2; max-width: 380rpx; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
-.date { font-size: 22rpx; color: #9aa3b5; }
+.date { font-size: 22rpx; color: #A6AAC2; }
 .row-right { display: flex; align-items: center; gap: 10rpx; }
 .channel-tag { font-size: 20rpx; padding: 2rpx 12rpx; border-radius: 8rpx; font-weight: 600; }
-.ai-tag { margin-left: 10rpx; background: #eef3ff; color: #2f6fed; border-radius: 8rpx;
+.ai-tag { margin-left: 10rpx; background: #EFF1FF; color: #6C7BF5; border-radius: 8rpx;
   padding: 2rpx 10rpx; font-size: 20rpx; font-weight: 600; }
 .amount { font-size: 32rpx; font-weight: 700; }
-.amount-in { color: #16b07a; } .amount-out { color: #263246; }
-.load-more { text-align: center; color: #7c8595; font-size: 24rpx; padding: 24rpx; }
+.amount-in { color: #45C39A; } .amount-out { color: #3A3F58; }
+.load-more { text-align: center; color: #8A90A8; font-size: 24rpx; padding: 24rpx; }
 
 /* ===== 日历 ===== */
 .cal-card { padding: 24rpx 18rpx 18rpx; }
 .cal-summary { display: flex; justify-content: space-between; padding: 0 10rpx 18rpx;
-  border-bottom: 1rpx solid #f0f3f9; }
-.cal-sum-item { font-size: 24rpx; color: #7c8595; }
-.out { color: #e5484d; } .in { color: #16b07a; }
+  border-bottom: 1rpx solid #F1EFF9; }
+.cal-sum-item { font-size: 24rpx; color: #8A90A8; }
+.out { color: #F27E7E; } .in { color: #45C39A; }
 .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); margin: 16rpx 0 8rpx; }
-.cal-week text { text-align: center; font-size: 22rpx; color: #9aa3b5; }
+.cal-week text { text-align: center; font-size: 22rpx; color: #A6AAC2; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8rpx; }
-.cal-cell { min-height: 112rpx; border-radius: 14rpx; padding: 8rpx 2rpx 6rpx;
+.cal-cell { min-height: 112rpx; border-radius: 18rpx; padding: 8rpx 2rpx 6rpx;
   display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
   border: 2rpx solid transparent; }
-.cal-selected { border-color: #2f6fed; background-color: #eef3ff; }
-.cal-day { font-size: 24rpx; font-weight: 600; color: #33415c; line-height: 40rpx;
-  min-width: 40rpx; text-align: center; border-radius: 20rpx; }
-.cal-today { background: #2f6fed; color: #fff; }
+.cal-selected { border-color: #6C7BF5; background-color: #EFF1FF; }
+.cal-day { font-size: 24rpx; font-weight: 600; color: #4A4F6B; line-height: 40rpx;
+  min-width: 40rpx; text-align: center; border-radius: 24rpx; }
+.cal-today { background: #6C7BF5; color: #fff; }
 .cal-amount { font-size: 18rpx; line-height: 26rpx; max-width: 100%;
   overflow: hidden; white-space: nowrap; }
-.cal-amount.out { color: #d64550; }
-.cal-amount.in { color: #0f9d6e; }
+.cal-amount.out { color: #E86A72; }
+.cal-amount.in { color: #33B98E; }
 
 /* ===== 当日明细 ===== */
 .day-panel { padding: 24rpx; }
 .day-head { display: flex; justify-content: space-between; align-items: center;
-  padding-bottom: 16rpx; border-bottom: 1rpx solid #f0f3f9; }
+  padding-bottom: 16rpx; border-bottom: 1rpx solid #F1EFF9; }
 .day-title { font-size: 30rpx; font-weight: 700; }
-.day-sum { font-size: 22rpx; color: #7c8595; }
-.day-bill { margin: 16rpx 0 0; box-shadow: none; border: 1rpx solid #f0f3f9; padding: 20rpx; }
+.day-sum { font-size: 22rpx; color: #8A90A8; }
+.day-bill { margin: 16rpx 0 0; box-shadow: none; border: 1rpx solid #F1EFF9; padding: 20rpx; }
 .day-empty { text-align: center; padding: 36rpx 0 20rpx; }
-.day-empty-text { display: block; font-size: 24rpx; color: #9aa3b5; margin-bottom: 22rpx; }
+.day-empty-text { display: block; font-size: 24rpx; color: #A6AAC2; margin-bottom: 22rpx; }
 .day-add { width: 340rpx; height: 72rpx; font-size: 26rpx; margin: 0 auto; }
 
 .fab { position: fixed; right: 40rpx; bottom: 200rpx; width: 108rpx; height: 108rpx;
-  border-radius: 54rpx; background: #2f6fed; color: #fff; font-size: 56rpx;
+  border-radius: 54rpx; background: #6C7BF5; color: #fff; font-size: 56rpx;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 10rpx 30rpx rgba(47, 111, 237, .4); }
+  box-shadow: 0 10rpx 30rpx rgba(124, 139, 255, .35); }
 .fab:active { opacity: .85; }
 </style>

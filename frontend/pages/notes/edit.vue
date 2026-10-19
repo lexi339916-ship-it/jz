@@ -130,7 +130,7 @@ onLoad(async (options) => {
           <text class="pin-title">置顶显示</text>
           <text class="pin-sub">置顶的任务会排在最前面</text>
         </view>
-        <switch :checked="pinned" color="#2f6fed" @change="e => pinned = e.detail.value" />
+        <switch :checked="pinned" color="#6C7BF5" @change="e => pinned = e.detail.value" />
       </view>
     </view>
 
@@ -145,30 +145,30 @@ onLoad(async (options) => {
 
 <style scoped>
 .page { padding-bottom: 60rpx; }
-.type-switch { display: flex; background: #f5f7fb; border-radius: 16rpx; padding: 8rpx; }
+.type-switch { display: flex; background: #F6F4FB; border-radius: 20rpx; padding: 8rpx; }
 .type-btn { flex: 1; text-align: center; padding: 16rpx 0; border-radius: 12rpx;
-  font-size: 28rpx; color: #7c8595; }
-.type-note { background: #2f6fed; color: #fff; font-weight: 700; }
-.type-todo { background: #f59f0b; color: #fff; font-weight: 700; }
+  font-size: 28rpx; color: #8A90A8; }
+.type-note { background: #6C7BF5; color: #fff; font-weight: 700; }
+.type-todo { background: #F2B45C; color: #fff; font-weight: 700; }
 
-.field-label { display: block; font-size: 26rpx; color: #4a5568; margin: 30rpx 0 16rpx; }
-.ph { color: #b6bdcc; }
-.ta { width: 100%; min-height: 180rpx; background: #f5f7fb; border-radius: 16rpx;
+.field-label { display: block; font-size: 26rpx; color: #5A5F78; margin: 30rpx 0 16rpx; }
+.ph { color: #C3C7DA; }
+.ta { width: 100%; min-height: 180rpx; background: #F6F4FB; border-radius: 20rpx;
   padding: 24rpx; font-size: 28rpx; box-sizing: border-box; }
 .due-row { display: flex; gap: 20rpx; }
-.picker-value { height: 88rpx; background: #f5f7fb; border-radius: 16rpx;
+.picker-value { height: 88rpx; background: #F6F4FB; border-radius: 20rpx;
   display: flex; align-items: center; justify-content: center; padding: 0 30rpx; font-size: 28rpx; }
 
 .pri-row { display: flex; gap: 18rpx; }
-.pri-item { flex: 1; text-align: center; padding: 18rpx 0; border-radius: 16rpx;
-  font-size: 28rpx; background: #f5f7fb; color: #7c8595; font-weight: 600; }
-.pri-high.pri-active { background: #fdecec; color: #e5484d; }
-.pri-medium.pri-active { background: #fdf6ec; color: #f59f0b; }
-.pri-low.pri-active { background: #f2f4f8; color: #5b6473; }
+.pri-item { flex: 1; text-align: center; padding: 18rpx 0; border-radius: 20rpx;
+  font-size: 28rpx; background: #F6F4FB; color: #8A90A8; font-weight: 600; }
+.pri-high.pri-active { background: #FFEDEE; color: #F27E7E; }
+.pri-medium.pri-active { background: #FFF6E7; color: #F2B45C; }
+.pri-low.pri-active { background: #F4F2FA; color: #6B7089; }
 
 .pin-row { display: flex; justify-content: space-between; align-items: center; margin-top: 34rpx; }
 .pin-title { display: block; font-size: 28rpx; font-weight: 600; }
-.pin-sub { display: block; font-size: 22rpx; color: #9aa3b5; margin-top: 6rpx; }
+.pin-sub { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 6rpx; }
 
 .actions { margin: 30rpx 24rpx; display: flex; flex-direction: column; gap: 20rpx; }
 </style>

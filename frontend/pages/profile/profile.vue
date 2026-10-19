@@ -147,7 +147,7 @@ onShow(() => {
     <text class="group-title">账号与安全</text>
     <view class="group-card">
       <view class="menu-item" @click="pwdOpen = !pwdOpen">
-        <view class="menu-icon" style="background: #eef3ff">🔐</view>
+        <view class="menu-icon" style="background: #EFF1FF">🔐</view>
         <view class="menu-main">
           <text class="menu-title">账号与安全</text>
           <text class="menu-sub">@{{ store.user?.username }} · 修改登录密码</text>
@@ -169,7 +169,7 @@ onShow(() => {
     <text class="group-title">常用功能</text>
     <view class="group-card">
       <view class="menu-item" @click="goBills">
-        <view class="menu-icon" style="background: #e8f8f2">📊</view>
+        <view class="menu-icon" style="background: #E9F8F2">📊</view>
         <view class="menu-main">
           <text class="menu-title">我的明细</text>
           <text class="menu-sub">查看和管理你的收支记录</text>
@@ -177,7 +177,7 @@ onShow(() => {
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" @click="budgetOpen = !budgetOpen">
-        <view class="menu-icon" style="background: #fdf6ec">💰</view>
+        <view class="menu-icon" style="background: #FFF6E7">💰</view>
         <view class="menu-main">
           <text class="menu-title">月度预算</text>
           <text class="menu-sub">
@@ -200,7 +200,7 @@ onShow(() => {
         </view>
       </view>
       <view class="menu-item" @click="uni.navigateTo({ url: '/pages/goals/goals' })">
-        <view class="menu-icon" style="background: #fdecec">🎯</view>
+        <view class="menu-icon" style="background: #FFEDEE">🎯</view>
         <view class="menu-main">
           <text class="menu-title">储蓄目标与挑战</text>
           <text class="menu-sub">攒钱目标 · 生活挑战 · 进度追踪</text>
@@ -208,7 +208,7 @@ onShow(() => {
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" @click="goAi">
-        <view class="menu-icon" style="background: #f3f0ff">✨</view>
+        <view class="menu-icon" style="background: #F4F0FF">✨</view>
         <view class="menu-main">
           <text class="menu-title">AI 助手</text>
           <text class="menu-sub">一句话记账 · 任务提取 · 问账本</text>
@@ -221,7 +221,7 @@ onShow(() => {
     <text class="group-title">关于我们</text>
     <view class="group-card">
       <view class="menu-item" @click="aboutOpen = !aboutOpen">
-        <view class="menu-icon" style="background: #f5f7fb">ℹ️</view>
+        <view class="menu-icon" style="background: #F6F4FB">ℹ️</view>
         <view class="menu-main">
           <text class="menu-title">关于系统</text>
           <text class="menu-sub">智能记账与生活便签一体化管理系统 v1.0</text>
@@ -248,57 +248,57 @@ onShow(() => {
 .page-title { display: block; font-size: 48rpx; font-weight: 800; margin: 10rpx 8rpx 26rpx; }
 
 /* 用户卡 */
-.user-card { display: flex; align-items: center; background: #fff; border-radius: 28rpx;
-  padding: 34rpx 30rpx; box-shadow: 0 6rpx 24rpx rgba(40, 70, 120, .06); }
+.user-card { display: flex; align-items: center; background: #FFFDF8; border-radius: 32rpx;
+  padding: 34rpx 30rpx; box-shadow: 0 6rpx 24rpx rgba(124, 139, 255, .10); }
 .avatar { width: 118rpx; height: 118rpx; border-radius: 36rpx; flex-shrink: 0;
-  background: linear-gradient(135deg, #2f6fed, #6fb0ff); color: #fff;
+  background: linear-gradient(135deg, #6C7BF5, #A8B2FF); color: #fff;
   display: flex; align-items: center; justify-content: center; font-size: 52rpx; font-weight: 800; }
 .user-info { margin-left: 26rpx; flex: 1; min-width: 0; }
 .name-row { display: flex; align-items: center; gap: 16rpx; }
 .name { font-size: 36rpx; font-weight: 700; }
-.edit-hint { font-size: 22rpx; color: #2f6fed; background: #eef3ff; border-radius: 16rpx; padding: 4rpx 16rpx; }
+.edit-hint { font-size: 22rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 20rpx; padding: 4rpx 16rpx; }
 .name-edit { display: flex; align-items: center; gap: 16rpx; }
-.name-input { height: 64rpx; background: #f5f7fb; border-radius: 12rpx; padding: 0 20rpx;
+.name-input { height: 64rpx; background: #F6F4FB; border-radius: 12rpx; padding: 0 20rpx;
   font-size: 30rpx; width: 300rpx; }
-.save-btn { font-size: 26rpx; font-weight: 600; color: #2f6fed; }
-.username { display: block; font-size: 24rpx; color: #9aa3b5; margin-top: 8rpx; }
+.save-btn { font-size: 26rpx; font-weight: 600; color: #6C7BF5; }
+.username { display: block; font-size: 24rpx; color: #A6AAC2; margin-top: 8rpx; }
 .status-chip { display: inline-flex; align-items: center; gap: 10rpx; margin-top: 16rpx;
-  background: #e8f8f2; color: #0f9d6e; border-radius: 24rpx; padding: 8rpx 20rpx; font-size: 22rpx; }
-.status-dot { width: 12rpx; height: 12rpx; border-radius: 6rpx; background: #16b07a; }
+  background: #E9F8F2; color: #33B98E; border-radius: 28rpx; padding: 8rpx 20rpx; font-size: 22rpx; }
+.status-dot { width: 12rpx; height: 12rpx; border-radius: 6rpx; background: #45C39A; }
 
 /* 统计三卡 */
 .stats-row { display: flex; gap: 18rpx; margin-top: 20rpx; }
-.stat-card { flex: 1; background: #fff; border-radius: 22rpx; padding: 26rpx 0;
-  text-align: center; box-shadow: 0 6rpx 24rpx rgba(40, 70, 120, .06); }
-.stat-num { display: block; font-size: 40rpx; font-weight: 800; color: #2f6fed; }
-.stat-label { display: block; font-size: 22rpx; color: #9aa3b5; margin-top: 8rpx; }
+.stat-card { flex: 1; background: #FFFDF8; border-radius: 26rpx; padding: 26rpx 0;
+  text-align: center; box-shadow: 0 6rpx 24rpx rgba(124, 139, 255, .10); }
+.stat-num { display: block; font-size: 40rpx; font-weight: 800; color: #6C7BF5; }
+.stat-label { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 8rpx; }
 
 /* 分组菜单 */
-.group-title { display: block; font-size: 26rpx; color: #7c8595; font-weight: 600;
+.group-title { display: block; font-size: 26rpx; color: #8A90A8; font-weight: 600;
   margin: 34rpx 8rpx 14rpx; }
-.group-card { background: #fff; border-radius: 24rpx; overflow: hidden;
-  box-shadow: 0 6rpx 24rpx rgba(40, 70, 120, .06); }
+.group-card { background: #FFFDF8; border-radius: 28rpx; overflow: hidden;
+  box-shadow: 0 6rpx 24rpx rgba(124, 139, 255, .10); }
 .menu-item { display: flex; align-items: center; padding: 28rpx 26rpx;
-  border-bottom: 1rpx solid #f4f6fa; }
+  border-bottom: 1rpx solid #F4F2FA; }
 .menu-item:last-child { border-bottom: none; }
-.menu-item:active { background: #fafbfe; }
-.menu-icon { width: 76rpx; height: 76rpx; border-radius: 22rpx; flex-shrink: 0;
+.menu-item:active { background: #FBFAFE; }
+.menu-icon { width: 76rpx; height: 76rpx; border-radius: 26rpx; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; font-size: 36rpx; margin-right: 22rpx; }
 .menu-main { flex: 1; min-width: 0; }
 .menu-title { display: block; font-size: 29rpx; font-weight: 600; }
-.menu-sub { display: block; font-size: 22rpx; color: #9aa3b5; margin-top: 8rpx; }
-.menu-arrow { font-size: 34rpx; color: #c4ccda; padding-left: 12rpx; }
+.menu-sub { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 8rpx; }
+.menu-arrow { font-size: 34rpx; color: #D3D7E7; padding-left: 12rpx; }
 
 /* 展开表单 */
-.expand-form { padding: 8rpx 26rpx 30rpx; background: #fafbfe; border-bottom: 1rpx solid #f4f6fa; }
-.form-input { margin-bottom: 18rpx; background: #fff; }
-.ph { color: #b6bdcc; }
+.expand-form { padding: 8rpx 26rpx 30rpx; background: #FBFAFE; border-bottom: 1rpx solid #F4F2FA; }
+.form-input { margin-bottom: 18rpx; background: #FFFDF8; }
+.ph { color: #C3C7DA; }
 .form-btn { height: 80rpx; font-size: 28rpx; }
 .budget-row { display: flex; gap: 18rpx; }
-.budget-input { flex: 1; background: #fff; }
+.budget-input { flex: 1; background: #FFFDF8; }
 .budget-save { margin: 0; width: 170rpx; height: 88rpx; font-size: 28rpx; }
-.budget-status { margin-top: 18rpx; font-size: 23rpx; color: #4a5568; }
-.about-text { display: block; font-size: 24rpx; color: #7c8595; line-height: 1.9; }
+.budget-status { margin-top: 18rpx; font-size: 23rpx; color: #5A5F78; }
+.about-text { display: block; font-size: 24rpx; color: #8A90A8; line-height: 1.9; }
 
 .logout-wrap { margin-top: 40rpx; }
 </style>

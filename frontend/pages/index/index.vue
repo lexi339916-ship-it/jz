@@ -11,15 +11,33 @@ const budget = ref(null)
 const recentBills = ref([])
 const todos = ref([])
 const pendingCount = ref(0)
-const todayDueCount = ref(0)   // 今天到期 + 已逾期数量
+const todayDueCount = ref(0)
 
 // AI 洞察卡状态
 const insightText = ref('')
 const insightLoading = ref(false)
 const insightNotice = ref('')
 
+const nickname = computed(() =>
+  store.user?.nickname || store.user?.username || '朋友')
+
+const todayText = computed(() => {
+  const d = new Date()
+  const names = '日一二三四五六'
+  return `${d.getMonth() + 1}月${d.getDate()}日 周${names[d.getDay()]}`
+})
+
+const greeting = computed(() => {
+  const h = new Date().getHours()
+  if (h < 6) return '夜深了，记完这笔早点休息'
+  if (h < 11) return '早上好，今天也要好好记账呀'
+  if (h < 14) return '中午好，别忘了记下这顿饭'
+  if (h < 18) return '下午好，来看看今天的开销吧'
+  return '晚上好，今天记账了吗'
+})
+
 const netColor = computed(() =>
-  (Number(stats.value.net) >= 0 ? '#b8ffdf' : '#ffd9d9'))
+  (Number(stats.value.net) >= 0 ? '#CFF7E9' : '#FFDCE1'))
 
 function currentMonth() {
   const d = new Date()
@@ -103,8 +121,19 @@ onPullDownRefresh(() => {
 
 <template>
   <view class="page">
-    <!-- 月度收支总览 -->
+    <!-- 手账页眉 -->
+    <view class="header">
+      <view class="header-top">
+        <text class="date-text">{{ todayText }}</text>
+        <text class="header-deco">✦ ✧</text>
+      </view>
+      <text class="page-title">你好，{{ nickname }}</text>
+      <text class="greeting">{{ greeting }}</text>
+    </view>
+
+    <!-- 月度结余手账卡 -->
     <view class="hero">
+      <view class="washi" />
       <view class="month-nav">
         <text class="arrow" @click="prevMonth">‹</text>
         <text class="month">{{ month.slice(0, 4) }}年{{ Number(month.slice(5)) }}月</text>
@@ -115,9 +144,8 @@ onPullDownRefresh(() => {
         {{ Number(stats.net) >= 0 ? '' : '-' }}¥{{ Math.abs(Number(stats.net)).toFixed(2) }}
       </text>
       <view class="io-row">
-        <text class="io-item">收入 ¥{{ Number(stats.income).toFixed(2) }}</text>
-        <text class="io-divider">|</text>
-        <text class="io-item">支出 ¥{{ Number(stats.expense).toFixed(2) }}</text>
+        <text class="io-chip">收入 ¥{{ Number(stats.income).toFixed(2) }}</text>
+        <text class="io-chip">支出 ¥{{ Number(stats.expense).toFixed(2) }}</text>
       </view>
       <!-- 近 7 日支出趋势 -->
       <view class="trend" v-if="weekBars.length">
@@ -128,10 +156,20 @@ onPullDownRefresh(() => {
       </view>
     </view>
 
+    <!-- 截图记账入口（突出） -->
+    <view class="shoot-card" @click="uni.switchTab({ url: '/pages/ai/assistant' })">
+      <view class="shoot-icon">📷</view>
+      <view class="shoot-main">
+        <text class="shoot-title">拍张截图，自动记账</text>
+        <text class="shoot-sub">上传支付截图 / 小票 · AI 识别金额、商户与渠道</text>
+      </view>
+      <text class="shoot-arrow">›</text>
+    </view>
+
     <!-- AI 洞察卡 -->
     <view class="card insight-card">
       <view class="insight-head">
-        <view class="insight-badge">✨ AI 洞察</view>
+        <view class="insight-badge">✦ AI 小助手</view>
         <text class="insight-refresh" @click="loadInsight(true)">刷新</text>
       </view>
       <view v-if="insightLoading" class="insight-loading">
@@ -144,7 +182,7 @@ onPullDownRefresh(() => {
     <!-- 预算使用 -->
     <view class="card" v-if="budget && Number(budget.amount) > 0">
       <view class="row-between">
-        <text class="budget-title">月度预算</text>
+        <text class="budget-title">本月预算</text>
         <text class="budget-nums">
           ¥{{ Number(budget.spent).toFixed(2) }} / ¥{{ Number(budget.amount).toFixed(2) }}
         </text>
@@ -152,7 +190,7 @@ onPullDownRefresh(() => {
       <view class="bar-track">
         <view class="bar-fill"
           :style="{ width: Math.min(budget.usage_ratio * 100, 100) + '%',
-                    background: budget.usage_ratio > 0.9 ? '#e5484d' : '#2f6fed' }" />
+                    background: budget.usage_ratio > 0.9 ? '#F27E7E' : 'linear-gradient(90deg,#7C8BFF,#A78BFA)' }" />
       </view>
       <text class="budget-hint">
         {{ budget.usage_ratio >= 1 ? '预算已超支，注意控制支出' : `已使用 ${Math.round(budget.usage_ratio * 100)}%` }}
@@ -165,7 +203,7 @@ onPullDownRefresh(() => {
         <text class="quick-icon q-blue">✏️</text><text>记一笔</text>
       </view>
       <view class="quick-item" @click="uni.switchTab({ url: '/pages/ai/assistant' })">
-        <text class="quick-icon q-green">✨</text><text>智能记账</text>
+        <text class="quick-icon q-green">✨</text><text>AI 记账</text>
       </view>
       <view class="quick-item" @click="uni.navigateTo({ url: '/pages/notes/edit' })">
         <text class="quick-icon q-orange">📝</text><text>写便签</text>
@@ -219,39 +257,57 @@ onPullDownRefresh(() => {
 <style scoped>
 .page { padding-bottom: 40rpx; }
 
-/* 渐变总览卡 */
-.hero { margin: 20rpx 24rpx; padding: 34rpx 30rpx 26rpx; border-radius: 30rpx;
-  background: linear-gradient(150deg, #2b5fd9 0%, #4a86f7 55%, #6fb0ff 100%);
-  color: #fff; box-shadow: 0 14rpx 36rpx rgba(47, 111, 237, .35); }
-.month-nav { display: flex; align-items: center; justify-content: center; gap: 30rpx; }
-.arrow { font-size: 44rpx; opacity: .9; padding: 0 20rpx; }
-.month { font-size: 28rpx; font-weight: 600; opacity: .95; }
-.net-label { display: block; text-align: center; font-size: 24rpx; opacity: .8; margin-top: 26rpx; }
-.net-num { display: block; text-align: center; font-size: 72rpx; font-weight: 800;
-  letter-spacing: 1rpx; margin: 8rpx 0 4rpx; }
-.io-row { display: flex; justify-content: center; align-items: center; gap: 20rpx; }
-.io-item { font-size: 24rpx; opacity: .92; }
-.io-divider { opacity: .4; }
+/* 页眉 */
+.header { padding: 28rpx 32rpx 6rpx; }
+.header-top { display: flex; justify-content: space-between; align-items: center; }
+.date-text { font-size: 24rpx; color: #8A90A8; letter-spacing: 1rpx; }
+.header-deco { font-size: 26rpx; color: #C7B7F7; letter-spacing: 6rpx; }
+.header .page-title { margin: 12rpx 0 6rpx; }
+.greeting { display: block; font-size: 25rpx; color: #8A90A8; letter-spacing: 1rpx; }
 
-/* 近 7 日趋势 */
-.trend { display: flex; align-items: flex-end; gap: 10rpx; height: 110rpx;
-  margin-top: 28rpx; padding-top: 6rpx; border-top: 1rpx solid rgba(255,255,255,.22); }
+/* 结余手账卡 */
+.hero { position: relative; margin: 22rpx 24rpx 0; padding: 34rpx 30rpx 26rpx;
+  border-radius: 38rpx; overflow: hidden;
+  background: linear-gradient(155deg, #8B97FF 0%, #A9A2FF 55%, #C9B8FF 100%);
+  color: #fff; box-shadow: 0 16rpx 38rpx rgba(124, 139, 255, .30); }
+.month-nav { display: flex; align-items: center; justify-content: center; gap: 30rpx; }
+.arrow { font-size: 42rpx; opacity: .9; padding: 0 18rpx; }
+.month { font-size: 27rpx; font-weight: 600; opacity: .95; letter-spacing: 1rpx; }
+.net-label { display: block; text-align: center; font-size: 24rpx; opacity: .8; margin-top: 24rpx; }
+.net-num { display: block; text-align: center; font-size: 74rpx; font-weight: 800;
+  letter-spacing: 1rpx; margin: 8rpx 0 14rpx; }
+.io-row { display: flex; justify-content: center; gap: 18rpx; }
+.io-chip { font-size: 23rpx; background: rgba(255, 255, 255, .18);
+  border-radius: 999rpx; padding: 8rpx 22rpx; }
+.trend { display: flex; align-items: flex-end; gap: 10rpx; height: 104rpx;
+  margin-top: 26rpx; padding-top: 6rpx; border-top: 1rpx solid rgba(255,255,255,.22); }
 .trend-col { flex: 1; height: 100%; display: flex; flex-direction: column;
   align-items: center; justify-content: flex-end; }
-.trend-bar { width: 66%; border-radius: 6rpx 6rpx 2rpx 2rpx;
-  background: rgba(255,255,255,.28); }
-.trend-has { background: rgba(255,255,255,.85); }
-.trend-label { font-size: 18rpx; opacity: .75; margin-top: 8rpx; }
+.trend-bar { width: 62%; border-radius: 8rpx 8rpx 3rpx 3rpx; background: rgba(255,255,255,.30); }
+.trend-has { background: rgba(255,255,255,.88); }
+.trend-label { font-size: 17rpx; opacity: .75; margin-top: 8rpx; }
+
+/* 截图记账入口 */
+.shoot-card { display: flex; align-items: center; margin: 20rpx 24rpx 0; padding: 26rpx 26rpx;
+  background: #FFFDF8; border: 2rpx dashed #BFB4F2; border-radius: 32rpx;
+  box-shadow: 0 10rpx 26rpx rgba(124, 139, 255, .10); }
+.shoot-card:active { opacity: .88; }
+.shoot-icon { width: 92rpx; height: 92rpx; border-radius: 28rpx; flex-shrink: 0;
+  background: #F4F0FF; display: flex; align-items: center; justify-content: center; font-size: 42rpx; }
+.shoot-main { flex: 1; margin-left: 22rpx; min-width: 0; }
+.shoot-title { display: block; font-size: 29rpx; font-weight: 800; color: #4A4F6B; letter-spacing: 1rpx; }
+.shoot-sub { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 8rpx; }
+.shoot-arrow { font-size: 36rpx; color: #C3C7DA; padding-left: 10rpx; }
 
 /* AI 洞察 */
-.insight-card { border: 2rpx solid #e3ebfd; background: linear-gradient(180deg, #f6f9ff, #ffffff); }
+.insight-card { background: linear-gradient(180deg, #F8F6FF 0%, #FFFDF8 70%); }
 .insight-head { display: flex; justify-content: space-between; align-items: center; }
-.insight-badge { font-size: 24rpx; font-weight: 700; color: #2f6fed; }
-.insight-refresh { font-size: 22rpx; color: #7c8595; padding: 4rpx 12rpx; }
-.insight-text { display: block; font-size: 26rpx; line-height: 1.7; color: #33415c; margin-top: 14rpx; }
-.insight-notice { display: block; font-size: 20rpx; color: #9aa3b5; margin-top: 8rpx; }
+.insight-badge { font-size: 24rpx; font-weight: 800; color: #7C6FE0; letter-spacing: 1rpx; }
+.insight-refresh { font-size: 22rpx; color: #A6AAC2; padding: 4rpx 12rpx; }
+.insight-text { display: block; font-size: 26rpx; line-height: 1.75; color: #4A4F6B; margin-top: 14rpx; }
+.insight-notice { display: block; font-size: 20rpx; color: #A6AAC2; margin-top: 8rpx; }
 .insight-loading { display: flex; gap: 10rpx; padding: 18rpx 0 6rpx; }
-.dot { width: 14rpx; height: 14rpx; border-radius: 7rpx; background: #a9c4f7;
+.dot { width: 14rpx; height: 14rpx; border-radius: 7rpx; background: #BFB4F2;
   animation: blink 1.2s infinite ease-in-out; }
 .dot:nth-child(2) { animation-delay: .2s; }
 .dot:nth-child(3) { animation-delay: .4s; }
@@ -260,41 +316,41 @@ onPullDownRefresh(() => {
 /* 预算 */
 .row-between { display: flex; justify-content: space-between; align-items: center; }
 .budget-title { font-size: 28rpx; font-weight: 700; }
-.budget-nums { font-size: 24rpx; color: #4a5568; }
-.bar-track { height: 16rpx; background: #edf0f5; border-radius: 8rpx; margin: 20rpx 0 12rpx; overflow: hidden; }
+.budget-nums { font-size: 24rpx; color: #5A5F78; }
+.bar-track { height: 16rpx; background: #EFEDF7; border-radius: 8rpx; margin: 20rpx 0 12rpx; overflow: hidden; }
 .bar-fill { height: 100%; border-radius: 8rpx; transition: width .3s; }
-.budget-hint { font-size: 22rpx; color: #7c8595; }
+.budget-hint { font-size: 22rpx; color: #8A90A8; }
 
 /* 快捷入口 */
-.quick { display: flex; gap: 14rpx; margin: 6rpx 24rpx 0; }
-.quick-item { flex: 1; background: #fff; border-radius: 20rpx; padding: 24rpx 0;
+.quick { display: flex; gap: 14rpx; margin: 20rpx 24rpx 0; }
+.quick-item { flex: 1; background: #FFFDF8; border-radius: 28rpx; padding: 24rpx 0;
   display: flex; flex-direction: column; align-items: center; gap: 10rpx;
-  font-size: 23rpx; color: #4a5568; box-shadow: 0 6rpx 24rpx rgba(40, 70, 120, .06); }
+  font-size: 23rpx; color: #5A5F78; box-shadow: 0 10rpx 26rpx rgba(124, 139, 255, .10); }
 .quick-item:active { opacity: .8; }
-.quick-icon { width: 76rpx; height: 76rpx; border-radius: 38rpx;
+.quick-icon { width: 78rpx; height: 78rpx; border-radius: 26rpx;
   display: flex; align-items: center; justify-content: center; font-size: 36rpx; }
-.q-blue { background: #eef3ff; } .q-green { background: #e8f8f2; }
-.q-orange { background: #fdf6ec; } .q-purple { background: #f3f0ff; }
+.q-blue { background: #EEF1FF; } .q-green { background: #E9F8F2; }
+.q-orange { background: #FFF6E7; } .q-purple { background: #F4F0FF; }
 
 /* 账单行 */
-.bill-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid #f0f2f6; }
+.bill-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx dashed #EFEDF7; }
 .bill-row:last-child { border-bottom: none; }
-.cat-icon { width: 76rpx; height: 76rpx; border-radius: 22rpx; font-size: 36rpx;
+.cat-icon { width: 76rpx; height: 76rpx; border-radius: 24rpx; font-size: 36rpx;
   display: flex; align-items: center; justify-content: center; margin-right: 22rpx; }
 .bill-left { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
 .bill-cat { font-size: 28rpx; font-weight: 600; }
-.bill-remark { font-size: 22rpx; color: #9aa3b5; max-width: 380rpx; overflow: hidden;
+.bill-remark { font-size: 22rpx; color: #A6AAC2; max-width: 380rpx; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
 .bill-amount { font-size: 30rpx; font-weight: 700; }
-.amount-in { color: #16b07a; } .amount-out { color: #263246; }
+.amount-in { color: #45C39A; } .amount-out { color: #3A3F58; }
 
 /* 待办 */
-.overdue-tip { margin: 4rpx 0 14rpx; background: #fdf2f2; color: #c53030; border-radius: 14rpx;
+.overdue-tip { margin: 4rpx 0 14rpx; background: #FFEDEE; color: #D96363; border-radius: 18rpx;
   padding: 16rpx 22rpx; font-size: 24rpx; }
 .overdue-num { font-weight: 800; }
-.todo-row { display: flex; align-items: center; gap: 16rpx; padding: 20rpx 4rpx; border-bottom: 1rpx solid #f0f2f6; }
+.todo-row { display: flex; align-items: center; gap: 16rpx; padding: 20rpx 4rpx; border-bottom: 1rpx dashed #EFEDF7; }
 .todo-row:last-child { border-bottom: none; }
-.todo-dot { width: 16rpx; height: 16rpx; border-radius: 8rpx; background: #f59f0b; flex-shrink: 0; }
+.todo-dot { width: 16rpx; height: 16rpx; border-radius: 8rpx; background: #F2B45C; flex-shrink: 0; }
 .todo-title { flex: 1; font-size: 26rpx; }
-.todo-due { font-size: 22rpx; color: #9aa3b5; }
+.todo-due { font-size: 22rpx; color: #A6AAC2; }
 </style>

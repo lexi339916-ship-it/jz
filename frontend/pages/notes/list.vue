@@ -154,51 +154,52 @@ onShow(load)
 
 <style scoped>
 .page { padding-bottom: 140rpx; }
-.top-bar { background: #fff; padding: 20rpx 24rpx 10rpx; }
+.top-bar { background: #FFFDF8; padding: 20rpx 24rpx 10rpx; }
 .search-box { display: flex; align-items: center; gap: 16rpx; }
-.search-input { flex: 1; height: 72rpx; background: #f5f7fb; border-radius: 36rpx;
+.search-input { flex: 1; height: 72rpx; background: #F6F4FB; border-radius: 36rpx;
   padding: 0 28rpx; font-size: 26rpx; }
-.ph { color: #b6bdcc; }
-.search-btn { color: #2f6fed; font-size: 26rpx; font-weight: 600; }
+.ph { color: #C3C7DA; }
+.search-btn { color: #6C7BF5; font-size: 26rpx; font-weight: 600; }
 .type-tabs { display: flex; gap: 16rpx; justify-content: center; margin: 18rpx 0 6rpx; }
-.tab { font-size: 26rpx; color: #7c8595; padding: 8rpx 28rpx; border-radius: 26rpx; background: #f5f7fb; }
-.tab-active { color: #fff; background: #2f6fed; font-weight: 600; }
-.pending-line { text-align: center; font-size: 22rpx; color: #9aa3b5; padding: 10rpx 0 4rpx; }
-.pending-num { color: #2f6fed; font-weight: 700; }
+.tab { font-size: 26rpx; color: #8A90A8; padding: 8rpx 28rpx; border-radius: 30rpx; background: #F6F4FB; }
+.tab-active { color: #fff; background: #6C7BF5; font-weight: 600; }
+.pending-line { text-align: center; font-size: 22rpx; color: #A6AAC2; padding: 10rpx 0 4rpx; }
+.pending-num { color: #6C7BF5; font-weight: 700; }
 
 .list { margin-top: 16rpx; }
-.task-card { display: flex; align-items: flex-start; background: #fff; margin: 14rpx 24rpx;
-  border-radius: 18rpx; padding: 26rpx 22rpx; box-shadow: 0 6rpx 24rpx rgba(40, 70, 120, .06); }
+.task-card { display: flex; align-items: flex-start; background: #FFFDF8; margin: 14rpx 24rpx;
+  border-radius: 26rpx; padding: 26rpx 22rpx; box-shadow: 0 10rpx 26rpx rgba(124, 139, 255, .10);
+  border-left: 10rpx solid #FFD98E; }
 .task-card:active { opacity: .85; }
-.check { width: 44rpx; height: 44rpx; border-radius: 22rpx; border: 3rpx solid #cbd2e0;
+.check { width: 44rpx; height: 44rpx; border-radius: 26rpx; border: 3rpx solid #D6D9E8;
   margin-right: 18rpx; margin-top: 2rpx; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26rpx; }
-.check-done { background: #16b07a; border-color: #16b07a; }
+.check-done { background: #45C39A; border-color: #45C39A; }
 .note-mark { width: 44rpx; margin-right: 18rpx; margin-top: 2rpx; flex-shrink: 0;
   font-size: 30rpx; text-align: center; }
 .task-main { flex: 1; min-width: 0; }
 .title-row { display: flex; align-items: center; gap: 12rpx; flex-wrap: wrap; }
 .task-title { font-size: 29rpx; font-weight: 600; }
-.done-title { color: #9aa3b5; text-decoration: line-through; }
+.done-title { color: #A6AAC2; text-decoration: line-through; }
 .pri-tag { font-size: 20rpx; border-radius: 8rpx; padding: 2rpx 12rpx; font-weight: 700; }
-.pri-high { background: #fdecec; color: #e5484d; }
-.pri-low { background: #f2f4f8; color: #8b93a5; }
+.pri-high { background: #FFEDEE; color: #F27E7E; }
+.pri-low { background: #F4F2FA; color: #8b93a5; }
 .pin-mark { font-size: 22rpx; }
-.task-content { display: block; font-size: 24rpx; color: #7c8595; margin-top: 10rpx;
+.task-content { display: block; font-size: 24rpx; color: #8A90A8; margin-top: 10rpx;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meta-row { display: flex; align-items: center; margin-top: 12rpx; }
 .due { font-size: 22rpx; }
-.due-over { color: #e5484d; font-weight: 700; }
-.due-today { color: #f59f0b; font-weight: 600; }
-.due-soon { color: #2f6fed; }
-.due-normal { color: #9aa3b5; }
-.due-none { color: #b6bdcc; }
-.pin-btn { font-size: 22rpx; color: #9aa3b5; padding: 8rpx 0 8rpx 16rpx; flex-shrink: 0; }
-.pin-on { color: #2f6fed; font-weight: 700; }
+.due-over { color: #F27E7E; font-weight: 700; }
+.due-today { color: #F2B45C; font-weight: 600; }
+.due-soon { color: #6C7BF5; }
+.due-normal { color: #A6AAC2; }
+.due-none { color: #C3C7DA; }
+.pin-btn { font-size: 22rpx; color: #A6AAC2; padding: 8rpx 0 8rpx 16rpx; flex-shrink: 0; }
+.pin-on { color: #6C7BF5; font-weight: 700; }
 
 .fab { position: fixed; right: 40rpx; bottom: 200rpx; width: 108rpx; height: 108rpx;
-  border-radius: 54rpx; background: #2f6fed; color: #fff; font-size: 56rpx;
+  border-radius: 54rpx; background: #6C7BF5; color: #fff; font-size: 56rpx;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 10rpx 30rpx rgba(47, 111, 237, .4); }
+  box-shadow: 0 10rpx 30rpx rgba(124, 139, 255, .35); }
 .fab:active { opacity: .85; }
 </style>

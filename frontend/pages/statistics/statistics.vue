@@ -61,7 +61,7 @@ const dayBars = computed(() => {
 
 // 环形占比图（conic-gradient，按分类配色）
 const donutStyle = computed(() => {
-  if (!catStats.value.length) return 'conic-gradient(#edf0f5 0% 100%)'
+  if (!catStats.value.length) return 'conic-gradient(#EFEDF7 0% 100%)'
   let acc = 0
   const stops = catStats.value.map(c => {
     const start = acc
@@ -73,7 +73,7 @@ const donutStyle = computed(() => {
 
 // 支付渠道环形图
 const channelDonutStyle = computed(() => {
-  if (!channelStats.value.length) return 'conic-gradient(#edf0f5 0% 100%)'
+  if (!channelStats.value.length) return 'conic-gradient(#EFEDF7 0% 100%)'
   let acc = 0
   const stops = channelStats.value.map(c => {
     const start = acc
@@ -122,7 +122,7 @@ onShow(() => {
       <view class="bar-track">
         <view class="bar-fill"
           :style="{ width: Math.min(budget.usage_ratio * 100, 100) + '%',
-                    background: budget.usage_ratio > 0.9 ? '#e5484d' : '#2f6fed' }" />
+                    background: budget.usage_ratio > 0.9 ? '#F27E7E' : '#6C7BF5' }" />
       </view>
     </view>
 
@@ -211,51 +211,51 @@ onShow(() => {
 <style scoped>
 .page { padding-bottom: 60rpx; }
 .month-nav { display: flex; align-items: center; justify-content: center; gap: 24rpx; padding: 24rpx 0 8rpx; }
-.arrow { font-size: 44rpx; color: #7c8595; padding: 0 20rpx; }
+.arrow { font-size: 44rpx; color: #8A90A8; padding: 0 20rpx; }
 .month { font-size: 30rpx; font-weight: 700; }
 
 .sum-grid { display: flex; gap: 18rpx; margin: 16rpx 24rpx 0; }
-.sum-card { flex: 1; border-radius: 20rpx; padding: 28rpx 0; text-align: center; color: #fff; }
-.c-green { background: linear-gradient(135deg, #16b07a, #3ecf9a); }
-.c-blue { background: linear-gradient(135deg, #2f6fed, #63a7ff); }
-.c-orange { background: linear-gradient(135deg, #f59f0b, #fbbf4d); }
+.sum-card { flex: 1; border-radius: 24rpx; padding: 28rpx 0; text-align: center; color: #fff; }
+.c-green { background: linear-gradient(135deg, #7FDFC0, #5ED3B0); }
+.c-blue { background: linear-gradient(135deg, #A8B2FF, #7C8BFF); }
+.c-orange { background: linear-gradient(135deg, #FFD98E, #F7C36B); }
 .sum-num { display: block; font-size: 30rpx; font-weight: 700; }
 .sum-label { display: block; font-size: 22rpx; opacity: .9; margin-top: 8rpx; }
 
 .row-between { display: flex; justify-content: space-between; align-items: center; }
 .block-title { font-size: 28rpx; font-weight: 700; }
-.muted { font-size: 24rpx; color: #7c8595; }
-.bar-track { height: 16rpx; background: #edf0f5; border-radius: 8rpx; margin-top: 20rpx; overflow: hidden; }
+.muted { font-size: 24rpx; color: #8A90A8; }
+.bar-track { height: 16rpx; background: #EFEDF7; border-radius: 8rpx; margin-top: 20rpx; overflow: hidden; }
 .bar-track.small { height: 12rpx; margin-top: 12rpx; }
-.bar-fill { height: 100%; background: #2f6fed; border-radius: 8rpx; }
+.bar-fill { height: 100%; background: #6C7BF5; border-radius: 8rpx; }
 
 .chart { display: flex; align-items: flex-end; height: 260rpx; margin-top: 24rpx; gap: 4rpx; }
 .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
-.col-bar { width: 70%; background: #e8edf5; border-radius: 6rpx 6rpx 0 0; min-height: 4rpx; }
-.col-has { background: linear-gradient(180deg, #63a7ff, #2f6fed); }
-.col-label { font-size: 18rpx; color: #9aa3b5; margin-top: 8rpx; }
+.col-bar { width: 70%; background: #E9E6F4; border-radius: 6rpx 6rpx 0 0; min-height: 4rpx; }
+.col-has { background: linear-gradient(180deg, #9DA9FF, #6C7BF5); }
+.col-label { font-size: 18rpx; color: #A6AAC2; margin-top: 8rpx; }
 
 .mini-tabs { display: flex; gap: 12rpx; }
-.mini-tab { font-size: 24rpx; color: #7c8595; background: #f5f7fb; border-radius: 22rpx; padding: 6rpx 22rpx; }
-.mini-active { background: #2f6fed; color: #fff; font-weight: 600; }
+.mini-tab { font-size: 24rpx; color: #8A90A8; background: #F6F4FB; border-radius: 26rpx; padding: 6rpx 22rpx; }
+.mini-active { background: #6C7BF5; color: #fff; font-weight: 600; }
 
 .cat-row { margin-top: 26rpx; }
 .cat-line { display: flex; justify-content: space-between; align-items: center; }
 .cat-left { display: flex; align-items: center; gap: 12rpx; }
 .cat-emoji { font-size: 32rpx; }
 .cat-name { font-size: 26rpx; font-weight: 600; }
-.cat-pct { font-size: 22rpx; color: #7c8595; background: #f5f7fb; border-radius: 10rpx;
+.cat-pct { font-size: 22rpx; color: #8A90A8; background: #F6F4FB; border-radius: 10rpx;
   padding: 2rpx 12rpx; }
-.cat-amount { font-size: 24rpx; color: #4a5568; }
+.cat-amount { font-size: 24rpx; color: #5A5F78; }
 
 /* 环形占比图 */
 .donut-wrap { display: flex; justify-content: center; padding: 30rpx 0 10rpx; }
 .donut { width: 320rpx; height: 320rpx; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; }
-.donut-hole { width: 220rpx; height: 220rpx; border-radius: 50%; background: #fff;
+.donut-hole { width: 220rpx; height: 220rpx; border-radius: 50%; background: #FFFDF8;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  box-shadow: inset 0 0 0 2rpx #f0f3f9; }
-.donut-label { font-size: 24rpx; color: #9aa3b5; }
-.donut-total { font-size: 32rpx; font-weight: 800; color: #263246; margin-top: 8rpx; }
+  box-shadow: inset 0 0 0 2rpx #F1EFF9; }
+.donut-label { font-size: 24rpx; color: #A6AAC2; }
+.donut-total { font-size: 32rpx; font-weight: 800; color: #3A3F58; margin-top: 8rpx; }
 .ch-dot { width: 20rpx; height: 20rpx; border-radius: 10rpx; }
 </style>

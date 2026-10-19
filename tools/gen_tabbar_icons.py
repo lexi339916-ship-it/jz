@@ -7,8 +7,8 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 OUT = Path(__file__).resolve().parents[1] / "frontend" / "static" / "tabbar"
-GRAY = (124, 133, 149, 255)
-BLUE = (47, 111, 237, 255)
+GRAY = (160, 164, 190, 255)
+BLUE = (108, 123, 245, 255)
 W = 5  # 线宽
 
 
