@@ -4,12 +4,18 @@
 > 代码层已做真机适配（服务器地址可配置、旧 WebView 兼容回退），但 APK 的实际打包与安装必须在
 > HBuilderX 中完成（需要 DCloud 账号与云打包）。
 
-## 一、打包前必须完成的事
+## 一、打包前检查（当前已配置好）
 
-### 1. 替换 DCloud appid
-`frontend/manifest.json` 中的 `appid` 目前是占位值 `__UNI__SMARTLIFE`。
-用 HBuilderX 打开项目 → 双击 `manifest.json` → 「基础配置」→ 点击「重新获取」生成真实 appid
-（需登录 DCloud 账号）。没有真实 appid 无法云打包。
+### 1. 应用标识与 Android 参数（已配置）
+- DCloud appid：`__UNI__0B30CB8`（已替换为真实 appid；如更换 DCloud 账号需重新获取）
+- Android 包名：`com.smartlife.app`
+- minSdkVersion：21；targetSdkVersion：28（允许 HTTP 局域网调试）
+- 权限：网络、相机、读写存储（截图记账用）
+- 版本：versionName `1.0.0` / versionCode `100`
+- 应用名称：智能记账与生活便签
+- 图标：HBuilderX 已生成图标集（`unpackage/res/icons/`）
+
+> 正式发布到应用商店前，建议把 targetSdkVersion 提升到 33+ 并改用 HTTPS。
 
 ### 2. 后端监听局域网
 默认启动只监听本机，手机无法访问。请改为：
