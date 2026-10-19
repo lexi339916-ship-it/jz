@@ -10,8 +10,11 @@ const amount = ref('')
 const category = ref('')
 const billDate = ref('')
 const remark = ref('')
+const payChannel = ref('')
+const fundingAccount = ref('')
 const categories = ref([])
 const saving = ref(false)
+const CHANNELS = ['微信支付', '支付宝', '银行卡', '云闪付', '现金', '其他']
 // 取本地日期（toISOString 会按 UTC 计算，凌晨时段会差一天）
 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
   .toISOString().slice(0, 10)
@@ -40,6 +43,8 @@ async function loadBill(id) {
   category.value = b.category
   billDate.value = b.bill_date
   remark.value = b.remark
+  payChannel.value = b.pay_channel || ''
+  fundingAccount.value = b.funding_account || ''
 }
 
 async function save() {
@@ -59,6 +64,8 @@ async function save() {
     bill_date: billDate.value,
     remark: remark.value,
     source: 'manual',
+    pay_channel: payChannel.value,
+    funding_account: fundingAccount.value,
   }
   saving.value = true
   try {
@@ -138,6 +145,21 @@ onLoad(async (options) => {
       <!-- 备注 -->
       <text class="field-label">备注</text>
       <input class="input" v-model="remark" placeholder="选填，如：午饭" placeholder-class="ph" />
+
+      <!-- 支付渠道 -->
+      <text class="field-label">支付渠道（选填）</text>
+      <view class="cat-grid">
+        <view :class="['cat-item', payChannel === '' && 'cat-selected']" @click="payChannel = ''">
+          <text>未记录</text>
+        </view>
+        <view v-for="c in CHANNELS" :key="c"
+          :class="['cat-item', payChannel === c && 'cat-selected']"
+          @click="payChannel = c">
+          <text>{{ c }}</text>
+        </view>
+      </view>
+      <input v-if="payChannel" class="input channel-account" v-model="fundingAccount"
+        placeholder="扣款账户（选填），如：零钱 / 工商银行储蓄卡" placeholder-class="ph" />
     </view>
 
     <view class="actions">
@@ -168,6 +190,7 @@ onLoad(async (options) => {
   background: #f5f7fb; border-radius: 18rpx; font-size: 26rpx; color: #4a5568; }
 .cat-emoji { font-size: 30rpx; }
 .cat-selected { background: #2f6fed; color: #fff; font-weight: 700; }
+.channel-account { margin-top: 16rpx; }
 .picker-value { height: 88rpx; background: #f5f7fb; border-radius: 16rpx;
   display: flex; align-items: center; padding: 0 24rpx; font-size: 28rpx; }
 

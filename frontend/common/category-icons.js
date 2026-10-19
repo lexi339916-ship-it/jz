@@ -23,3 +23,18 @@ export const CATEGORY_META = {
 export function categoryMeta(name) {
   return CATEGORY_META[name] || { icon: '🏷️', color: '#95a5a6' }
 }
+
+/** 支付渠道配色（统计环形图与标签统一） */
+export const CHANNEL_META = {
+  微信支付: { color: '#07c160' },
+  支付宝: { color: '#1677ff' },
+  银行卡: { color: '#f59f0b' },
+  云闪付: { color: '#e5484d' },
+  现金: { color: '#8b93a5' },
+  其他: { color: '#b2bec3' },
+  未记录: { color: '#d3d8e2' },
+}
+
+export function channelMeta(name) {
+  return CHANNEL_META[name] || { color: '#b2bec3' }
+}

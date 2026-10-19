@@ -199,6 +199,31 @@ r = client.get("/api/statistics/categories", headers=H_A,
 j = r.json()
 check("分类统计 餐饮35占100%", j["total"] == "35.00" and j["items"][0]["ratio"] == 1.0, r.text)
 
+# ---------- 7b. 支付渠道 ----------
+r = client.post("/api/bills", headers=H_A, json={
+    "type": "expense", "amount": "15", "category": "购物",
+    "bill_date": "2026-10-19", "remark": "渠道测试",
+    "pay_channel": "微信支付", "funding_account": "零钱", "source": "receipt"})
+check("创建带渠道账单",
+      r.status_code == 200 and r.json()["pay_channel"] == "微信支付"
+      and r.json()["funding_account"] == "零钱", r.text)
+channel_bill_id = r.json()["id"]
+r = client.get(f"/api/bills/{channel_bill_id}", headers=H_A)
+check("账单详情返回渠道", r.json()["pay_channel"] == "微信支付", r.text)
+r = client.put(f"/api/bills/{channel_bill_id}", headers=H_A, json={
+    "type": "expense", "amount": "15", "category": "购物",
+    "bill_date": "2026-10-19", "remark": "渠道测试",
+    "pay_channel": "支付宝", "funding_account": "", "source": "receipt"})
+check("修改账单渠道", r.json()["pay_channel"] == "支付宝", r.text)
+r = client.get("/api/statistics/channels", headers=H_A, params={"month": "2026-10"})
+j = r.json()
+check("渠道统计包含支付宝", any(i["channel"] == "支付宝" for i in j["items"]), r.text)
+check("渠道统计占比合计约为1",
+      abs(sum(i["ratio"] for i in j["items"]) - 1.0) < 0.01, r.text)
+r = client.get("/api/statistics/channels", headers=H_A)
+j = r.json()
+check("渠道统计全部时间包含未记录", any(i["channel"] == "未记录" for i in j["items"]), r.text)
+
 # ---------- 8. AI：未配置密钥 → 503 降级 ----------
 # 显式清空 AI 配置（.env 中可能已有真实密钥，不影响本断言）
 config.AI_BASE_URL = config.AI_API_KEY = config.AI_MODEL = ""
@@ -210,7 +235,7 @@ config.AI_BASE_URL = "https://mock.local/v1"
 config.AI_API_KEY = "mock-key"
 config.AI_MODEL = "mock-model"
 
-async def fake_chat(messages, temperature=0.0):
+async def fake_chat(messages, temperature=0.0, model=None):
     user_text = messages[-1]["content"]
     if "多笔" in user_text or "，" in user_text and "块" in user_text:
         return ('```json\n{"bills": ['
@@ -251,7 +276,7 @@ check("超过每日上限返回429", r.status_code == 429, r.text)
 config.AI_DAILY_LIMIT = 50
 
 # ---------- 11. AI 便签解析（多任务提取） ----------
-async def fake_note_chat(messages, temperature=0.0):
+async def fake_note_chat(messages, temperature=0.0, model=None):
     return ('{"items":['
             '{"title":"交课程设计报告","content":"","note_type":"todo","due_at":"2026-10-23 18:00","priority":"high","missing_fields":[]},'
             '{"title":"去超市买生活用品","content":"","note_type":"todo","due_at":"2026-10-20 15:00","priority":"medium","missing_fields":[]}'
@@ -268,13 +293,13 @@ r = client.get("/api/ai/summary", headers=H_B, params={"month": "2026-10"})
 j = r.json()
 check("无数据月份不调用模型", r.status_code == 200 and "暂无账单数据" in j["summary"], r.text)
 
-async def fake_summary_chat(messages, temperature=0.0):
+async def fake_summary_chat(messages, temperature=0.0, model=None):
     return '{"summary":"本月收入800元，支出35元，结余765元，整体控制良好。建议继续保持记账习惯。"}'
 
 ai_service.chat = fake_summary_chat
 r = client.get("/api/ai/summary", headers=H_A, params={"month": "2026-10"})
 j = r.json()
-check("月度总结基于真实统计", r.status_code == 200 and j["expense"] == "35.00", r.text)
+check("月度总结基于真实统计", r.status_code == 200 and j["expense"] == "50.00", r.text)
 
 # ---------- 13. AI 草稿确认后保存（source=ai 可追溯） ----------
 r = client.post("/api/bills", headers=H_A, json={

@@ -527,7 +527,7 @@ async def insight(refresh: bool = False, user: User = Depends(get_current_user),
 # ---------------- 问账本（工具调用） ----------------
 
 _ASK_TOOLS = {"monthly_summary", "category_summary", "top_categories", "largest_bill",
-              "category_compare", "budget_suggestion", "savings_calc"}
+              "category_compare", "budget_suggestion", "savings_calc", "channel_summary"}
 
 
 def _execute_ask_tool(db: Session, user: User, tool: str, params: dict) -> dict:
@@ -642,6 +642,17 @@ def _execute_ask_tool(db: Session, user: User, tool: str, params: dict) -> dict:
                 "monthly_saving": str((daily * 30).quantize(Decimal("0.01"))),
                 "yearly_saving": str((daily * 365).quantize(Decimal("0.01"))),
                 "basis": "按每月30天估算"}
+    if tool == "channel_summary":
+        rows = db.execute(
+            select(Bill.pay_channel, func.sum(Bill.amount), func.count())
+            .where(*cond, Bill.type == "expense")
+            .group_by(Bill.pay_channel)).all()
+        items = [{"channel": (name or "未记录"),
+                  "amount": str(Decimal(str(amount)).quantize(Decimal("0.01"))),
+                  "count": count}
+                 for name, amount, count in rows]
+        items.sort(key=lambda i: float(i["amount"]), reverse=True)
+        return {"month": month, "items": items}
     return {"error": "不支持的工具"}
 
 

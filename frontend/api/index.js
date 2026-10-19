@@ -45,6 +45,7 @@ export const apiDeleteChallenge = (id) => http.delete(`/api/challenges/${id}`)
 // ---- 统计 ----
 export const apiMonthlyStats = (month) => http.get('/api/statistics/monthly', { month })
 export const apiCategoryStats = (month, type) => http.get('/api/statistics/categories', { month, type })
+export const apiChannelStats = (month, type) => http.get('/api/statistics/channels', { month, type })
 export const apiProfileStats = () => http.get('/api/statistics/profile')
 
 // ---- AI ----

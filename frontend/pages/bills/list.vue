@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { apiBills, apiMonthlyStats } from '../../api/index.js'
-import { categoryMeta } from '../../common/category-icons.js'
+import { categoryMeta, channelMeta } from '../../common/category-icons.js'
 
 // 本地日期（避免 toISOString 的 UTC 偏移）
 const todayStr = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
@@ -217,7 +217,13 @@ onShow(() => {
           </view>
           <view class="mid-bottom">
             <text class="remark">{{ b.remark || (b.type === 'income' ? '收入' : '支出') }}</text>
-            <text class="date">{{ b.bill_date.slice(5) }}<text v-if="b.source === 'ai'" class="ai-tag">AI</text></text>
+            <view class="row-right">
+              <text v-if="b.pay_channel" class="channel-tag"
+                :style="{ color: channelMeta(b.pay_channel).color, background: channelMeta(b.pay_channel).color + '18' }">
+                {{ b.pay_channel }}
+              </text>
+              <text class="date">{{ b.bill_date.slice(5) }}<text v-if="b.source === 'ai'" class="ai-tag">AI</text><text v-if="b.source === 'receipt'" class="ai-tag">截图</text></text>
+            </view>
           </view>
         </view>
       </view>
@@ -276,7 +282,15 @@ onShow(() => {
               </view>
               <view class="mid-bottom">
                 <text class="remark">{{ b.remark || (b.type === 'income' ? '收入' : '支出') }}</text>
-                <text class="date" v-if="b.source === 'ai'"><text class="ai-tag">AI</text></text>
+                <view class="row-right">
+                  <text v-if="b.pay_channel" class="channel-tag"
+                    :style="{ color: channelMeta(b.pay_channel).color, background: channelMeta(b.pay_channel).color + '18' }">
+                    {{ b.pay_channel }}
+                  </text>
+                  <text class="date" v-if="b.source === 'ai' || b.source === 'receipt'">
+                    <text class="ai-tag">{{ b.source === 'receipt' ? '截图' : 'AI' }}</text>
+                  </text>
+                </view>
               </view>
             </view>
           </view>
@@ -321,6 +335,8 @@ onShow(() => {
 .remark { font-size: 22rpx; color: #9aa3b5; max-width: 380rpx; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
 .date { font-size: 22rpx; color: #9aa3b5; }
+.row-right { display: flex; align-items: center; gap: 10rpx; }
+.channel-tag { font-size: 20rpx; padding: 2rpx 12rpx; border-radius: 8rpx; font-weight: 600; }
 .ai-tag { margin-left: 10rpx; background: #eef3ff; color: #2f6fed; border-radius: 8rpx;
   padding: 2rpx 10rpx; font-size: 20rpx; font-weight: 600; }
 .amount { font-size: 32rpx; font-weight: 700; }

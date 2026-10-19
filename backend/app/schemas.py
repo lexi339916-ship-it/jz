@@ -63,6 +63,8 @@ class BillIn(BaseModel):
     remark: str = Field(default="", max_length=200)
     # manual=手动录入；ai=AI 草稿确认后保存；receipt=截图识别确认后保存（可追溯）
     source: Literal["manual", "ai", "receipt"] = "manual"
+    pay_channel: str = Field(default="", max_length=20)
+    funding_account: str = Field(default="", max_length=40)
 
 
 class BillOut(BaseModel):
@@ -74,6 +76,8 @@ class BillOut(BaseModel):
     bill_date: date
     remark: str
     source: str
+    pay_channel: str
+    funding_account: str
     created_at: datetime
 
 
@@ -160,6 +164,20 @@ class CategoryStatsOut(BaseModel):
     type: str
     total: Decimal
     items: list[CategoryStatItem]
+
+
+class ChannelStatItem(BaseModel):
+    channel: str
+    amount: Decimal
+    count: int
+    ratio: float
+
+
+class ChannelStatsOut(BaseModel):
+    month: str          # 空字符串表示全部时间
+    type: str
+    total: Decimal
+    items: list[ChannelStatItem]
 
 
 class ProfileStatsOut(BaseModel):

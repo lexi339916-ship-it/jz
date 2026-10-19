@@ -33,7 +33,8 @@ def _to_out(db: Session, row: Bill) -> BillOut:
     return BillOut(
         id=row.id, type=row.type, amount=row.amount, category=category_name,
         category_id=row.category_id, bill_date=row.bill_date, remark=row.remark,
-        source=row.source, created_at=row.created_at)
+        source=row.source, pay_channel=row.pay_channel or "",
+        funding_account=row.funding_account or "", created_at=row.created_at)
 
 
 def _get_owned(db: Session, user: User, bill_id: int) -> Bill:
@@ -95,7 +96,8 @@ def create_bill(data: BillIn, user: User = Depends(get_current_user),
     row = Bill(
         user_id=user.id, category_id=cat.id, type=data.type,
         amount=data.amount, bill_date=data.bill_date,
-        remark=data.remark, source=data.source)
+        remark=data.remark, source=data.source,
+        pay_channel=data.pay_channel, funding_account=data.funding_account)
     db.add(row)
     db.commit()
     db.refresh(row)
@@ -118,6 +120,8 @@ def update_bill(bill_id: int, data: BillIn, user: User = Depends(get_current_use
     row.bill_date = data.bill_date
     row.remark = data.remark
     row.category_id = cat.id
+    row.pay_channel = data.pay_channel
+    row.funding_account = data.funding_account
     db.commit()
     db.refresh(row)
     return _to_out(db, row)

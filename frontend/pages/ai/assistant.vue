@@ -76,8 +76,8 @@ const askResult = ref(null)
 const askExamples = [
   '这个月钱主要花在哪里？',
   '和上个月相比餐饮增加了多少？',
+  '微信支付花了多少？',
   '帮我制定下个月预算',
-  '每天少花15元能省多少？',
 ]
 
 const TOOL_LABELS = {
@@ -88,6 +88,7 @@ const TOOL_LABELS = {
   category_compare: '分类环比对比',
   budget_suggestion: '预算建议数据',
   savings_calc: '储蓄计算',
+  channel_summary: '渠道花费汇总',
 }
 
 function toolLabel(tool) {
@@ -125,6 +126,12 @@ function dataSummary(res) {
   }
   if (res.tool === 'savings_calc') {
     return `每天 ¥${d.daily_amount} → 每月省 ¥${d.monthly_saving} · 每年 ¥${d.yearly_saving}（${d.basis}）`
+  }
+  if (res.tool === 'channel_summary') {
+    const items = d.items || []
+    return items.length
+      ? items.map(i => `${i.channel} ¥${i.amount}（${i.count}笔）`).join(' · ')
+      : '该月没有支出记录'
   }
   return ''
 }
@@ -228,6 +235,8 @@ async function confirmDraft(index) {
       remark: remark.slice(0, 200),
       // 截图识别来源标记为 receipt，便于追溯
       source: result.value.isReceipt ? 'receipt' : 'ai',
+      pay_channel: d.pay_channel || '',
+      funding_account: d.funding_account || '',
     })
     uni.showToast({ title: '已保存账单', icon: 'success' })
     result.value.drafts.splice(index, 1)

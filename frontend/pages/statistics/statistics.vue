@@ -1,13 +1,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { apiMonthlyStats, apiCategoryStats, apiBudget } from '../../api/index.js'
-import { categoryMeta } from '../../common/category-icons.js'
+import { apiMonthlyStats, apiCategoryStats, apiBudget, apiChannelStats } from '../../api/index.js'
+import { categoryMeta, channelMeta } from '../../common/category-icons.js'
 
 const month = ref('')
 const stats = ref(null)
 const catStats = ref([])
 const catTotal = ref('0')
+const channelStats = ref([])
+const channelTotal = ref('0')
 const budget = ref(null)
 const statType = ref('expense')
 const loading = ref(false)
@@ -26,15 +28,18 @@ function shiftMonth(m, delta) {
 async function load() {
   loading.value = true
   try {
-    const [s, c, b] = await Promise.all([
+    const [s, c, b, ch] = await Promise.all([
       apiMonthlyStats(month.value),
       apiCategoryStats(month.value, statType.value),
       apiBudget(month.value).catch(() => null),
+      apiChannelStats(month.value, 'expense').catch(() => null),
     ])
     stats.value = s
     catStats.value = c.items
     catTotal.value = c.total
     budget.value = b
+    channelStats.value = ch ? ch.items : []
+    channelTotal.value = ch ? ch.total : 0
   } catch (e) { /* 统一提示 */ } finally { loading.value = false }
 }
 
@@ -62,6 +67,18 @@ const donutStyle = computed(() => {
     const start = acc
     acc += c.ratio * 100
     return `${categoryMeta(c.category).color} ${start.toFixed(1)}% ${Math.min(acc, 100).toFixed(1)}%`
+  })
+  return `conic-gradient(${stops.join(', ')})`
+})
+
+// 支付渠道环形图
+const channelDonutStyle = computed(() => {
+  if (!channelStats.value.length) return 'conic-gradient(#edf0f5 0% 100%)'
+  let acc = 0
+  const stops = channelStats.value.map(c => {
+    const start = acc
+    acc += c.ratio * 100
+    return `${channelMeta(c.channel).color} ${start.toFixed(1)}% ${Math.min(acc, 100).toFixed(1)}%`
   })
   return `conic-gradient(${stops.join(', ')})`
 })
@@ -156,6 +173,38 @@ onShow(() => {
         </view>
       </block>
     </view>
+    <!-- 支付渠道 -->
+    <view class="card">
+      <view class="row-between">
+        <text class="block-title">支付渠道（支出）</text>
+        <text class="muted">本月按平台统计</text>
+      </view>
+      <view v-if="!channelStats.length" class="empty">暂无渠道数据，记账时可选择支付渠道</view>
+      <block v-else>
+        <view class="donut-wrap">
+          <view class="donut" :style="{ background: channelDonutStyle }">
+            <view class="donut-hole">
+              <text class="donut-label">总支出</text>
+              <text class="donut-total">¥{{ Number(channelTotal).toFixed(2) }}</text>
+            </view>
+          </view>
+        </view>
+        <view class="cat-row" v-for="c in channelStats" :key="c.channel">
+          <view class="cat-line">
+            <view class="cat-left">
+              <view class="ch-dot" :style="{ background: channelMeta(c.channel).color }" />
+              <text class="cat-name">{{ c.channel }}</text>
+              <text class="cat-pct">{{ Math.round(c.ratio * 100) }}% · {{ c.count }} 笔</text>
+            </view>
+            <text class="cat-amount">¥{{ Number(c.amount).toFixed(2) }}</text>
+          </view>
+          <view class="bar-track small">
+            <view class="bar-fill"
+              :style="{ width: (c.ratio * 100) + '%', background: channelMeta(c.channel).color }" />
+          </view>
+        </view>
+      </block>
+    </view>
   </view>
 </template>
 
@@ -208,4 +257,5 @@ onShow(() => {
   box-shadow: inset 0 0 0 2rpx #f0f3f9; }
 .donut-label { font-size: 24rpx; color: #9aa3b5; }
 .donut-total { font-size: 32rpx; font-weight: 800; color: #263246; margin-top: 8rpx; }
+.ch-dot { width: 20rpx; height: 20rpx; border-radius: 10rpx; }
 </style>

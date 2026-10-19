@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 from app.deps import get_current_user, get_db
 from app.models import Bill, BillCategory, Note, User
 from app.schemas import (
-    CategoryStatItem, CategoryStatsOut, DayPoint, MonthlyStatsOut, ProfileStatsOut,
+    CategoryStatItem, CategoryStatsOut, ChannelStatItem, ChannelStatsOut,
+    DayPoint, MonthlyStatsOut, ProfileStatsOut,
 )
 
 router = APIRouter()
@@ -100,3 +101,34 @@ def profile_stats(user: User = Depends(get_current_user), db: Session = Depends(
         Note.user_id == user.id, Note.note_type == "todo", Note.status == "open")) or 0
     return ProfileStatsOut(total_bills=total_bills, total_days=total_days,
                            total_notes=total_notes, pending_todos=pending_todos)
+
+
+@router.get("/channels", response_model=ChannelStatsOut)
+def channels(month: str = "", type: str = "expense",
+             user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """按支付渠道统计：金额、笔数、占比。month 为空表示全部时间。"""
+    if type not in ("income", "expense"):
+        raise HTTPException(400, "type 只能为 income 或 expense")
+    conditions = [Bill.user_id == user.id, Bill.type == type]
+    label = ""
+    if month:
+        year, mon = _parse_month(month)
+        conditions += [extract("year", Bill.bill_date) == year,
+                       extract("month", Bill.bill_date) == mon]
+        label = month
+
+    rows = db.execute(
+        select(Bill.pay_channel, func.sum(Bill.amount), func.count())
+        .where(*conditions)
+        .group_by(Bill.pay_channel)).all()
+    total = sum((Decimal(str(amount)) for _, amount, _ in rows), Decimal("0"))
+    items = [
+        ChannelStatItem(
+            channel=(name or "未记录"),
+            amount=Decimal(str(amount)),
+            count=count,
+            ratio=round(float(Decimal(str(amount)) / total), 4) if total > 0 else 0.0)
+        for name, amount, count in rows
+    ]
+    items.sort(key=lambda i: i.amount, reverse=True)
+    return ChannelStatsOut(month=label, type=type, total=total, items=items)

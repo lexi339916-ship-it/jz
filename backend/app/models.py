@@ -46,6 +46,9 @@ class Bill(Base):
     remark: Mapped[str] = mapped_column(String(200), nullable=False, default="")
     # 数据来源可追溯：manual=手动录入，ai=AI 草稿经用户确认后保存
     source: Mapped[str] = mapped_column(String(10), nullable=False, default="manual")
+    # 支付渠道（如 微信支付/支付宝/银行卡）与扣款账户（如 零钱/工商银行储蓄卡）
+    pay_channel: Mapped[str] = mapped_column(String(20), nullable=False, default="")
+    funding_account: Mapped[str] = mapped_column(String(40), nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)

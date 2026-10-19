@@ -238,6 +238,7 @@ _ASK_TOOLS_DOC = """可用查询工具（只能选一个）：
 5. category_compare：某分类本月与上月的环比对比（含差额与百分比，后端计算）。参数 {{"category": "分类名"}}
 6. budget_suggestion：根据近几个月各分类平均支出生成预算建议数据。参数 {{"months": 1~6}}
 7. savings_calc：储蓄计算，例如每天少花 X 元。参数 {{"daily_amount": 数字}}
+8. channel_summary：某月各支付渠道（微信/支付宝/银行卡等）的花费汇总。参数 {{"month": "this" 或 "last"}}
 如果问题超出以上范围（如预测、与账本无关），返回 {{"tool": "unsupported", "params": {{}}}}。"""
 
 
@@ -256,6 +257,7 @@ def build_ask_step1_messages(question: str, month: str, categories: list[str]) -
 - "和上个月比 / 环比 / 增加了多少" → category_compare
 - "帮我制定下个月预算 / 预算建议 / 怎么分配" → budget_suggestion（months=3）
 - "每天少花X元 / 能省多少钱 / 攒多少钱" → savings_calc
+- "微信支付花了多少 / 支付宝花了多少 / 各平台（渠道）花了多少" → channel_summary
 - "本月收支怎么样 / 结余多少" → monthly_summary
 - "最大的支出 / 最贵的一笔" → largest_bill
 
