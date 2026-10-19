@@ -9,9 +9,18 @@ const content = ref('')
 const noteType = ref('note')
 const priority = ref('medium')
 const pinned = ref(false)
+const color = ref('lilac')
 const dueDate = ref('')
 const dueTime = ref('09:00')
 const saving = ref(false)
+const TASK_COLORS = [
+  { key: 'lilac', color: '#B9A7FF' },
+  { key: 'sky', color: '#9DB7F5' },
+  { key: 'mint', color: '#8FDCC2' },
+  { key: 'peach', color: '#F6B8A8' },
+  { key: 'sand', color: '#F2D48A' },
+  { key: 'rose', color: '#F3B8CB' },
+]
 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
   .toISOString().slice(0, 10)
 
@@ -28,6 +37,7 @@ async function loadNote(id) {
   noteType.value = n.note_type
   priority.value = n.priority || 'medium'
   pinned.value = !!n.pinned
+  color.value = n.color || 'lilac'
   if (n.due_at) {
     dueDate.value = String(n.due_at).slice(0, 10)
     dueTime.value = String(n.due_at).slice(11, 16) || '09:00'
@@ -51,6 +61,7 @@ async function save() {
     due_at: dueAt,
     priority: priority.value,
     pinned: pinned.value,
+    color: color.value,
   }
   saving.value = true
   try {
@@ -88,6 +99,9 @@ onLoad(async (options) => {
     await loadNote(editId.value)
   } else if (options && (options.type === 'todo' || options.type === 'note')) {
     noteType.value = options.type
+    if (options.date && /^\d{4}-\d{2}-\d{2}$/.test(options.date)) {
+      dueDate.value = options.date
+    }
     uni.setNavigationBarTitle({ title: options.type === 'todo' ? '新建待办' : '新建便签' })
   }
 })
@@ -125,6 +139,16 @@ onLoad(async (options) => {
             @click="priority = p.key">
             {{ p.label }}{{ priority === p.key ? ' ✓' : '' }}
           </text>
+        </view>
+
+        <text class="field-label">任务颜色</text>
+        <view class="color-row">
+          <view v-for="c in TASK_COLORS" :key="c.key"
+            :class="['color-item', color === c.key && 'color-active']"
+            :style="{ background: c.color }"
+            @click="color = c.key">
+            <text v-if="color === c.key" class="color-check">✓</text>
+          </view>
         </view>
       </block>
 
@@ -168,6 +192,13 @@ onLoad(async (options) => {
 .pri-high.pri-active { background: #FFEDEE; color: #F27E7E; }
 .pri-medium.pri-active { background: #FFF6E7; color: #F2B45C; }
 .pri-low.pri-active { background: #F4F2FA; color: #6B7089; }
+
+/* 任务颜色 */
+.color-row { display: flex; gap: 22rpx; padding: 4rpx 0; }
+.color-item { width: 60rpx; height: 60rpx; border-radius: 30rpx; display: flex;
+  align-items: center; justify-content: center; box-shadow: 0 4rpx 10rpx rgba(124, 139, 255, .16); }
+.color-active { border: 4rpx solid #4E5170; }
+.color-check { color: #fff; font-size: 26rpx; font-weight: 800; }
 
 .pin-row { display: flex; justify-content: space-between; align-items: center; margin-top: 34rpx; }
 .pin-title { display: block; font-size: 28rpx; font-weight: 600; }

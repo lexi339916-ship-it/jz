@@ -19,8 +19,8 @@ def _to_out(row: Note) -> NoteOut:
     return NoteOut(
         id=row.id, title=row.title, content=row.content,
         note_type=row.note_type, status=row.status, due_at=row.due_at,
-        priority=row.priority, pinned=bool(row.pinned), is_overdue=overdue,
-        created_at=row.created_at, updated_at=row.updated_at)
+        priority=row.priority, pinned=bool(row.pinned), color=row.color or "lilac",
+        is_overdue=overdue, created_at=row.created_at, updated_at=row.updated_at)
 
 
 def _get_owned(db: Session, user: User, note_id: int) -> Note:

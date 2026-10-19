@@ -66,9 +66,10 @@ class Note(Base):
     note_type: Mapped[str] = mapped_column(Enum("note", "todo"), nullable=False, default="note")
     status: Mapped[str] = mapped_column(Enum("open", "done"), nullable=False, default="open")
     due_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    # 任务管理扩展：优先级（high/medium/low）与置顶
+    # 任务管理扩展：优先级（high/medium/low）、置顶与任务颜色
     priority: Mapped[str] = mapped_column(String(10), nullable=False, default="medium")
     pinned: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    color: Mapped[str] = mapped_column(String(20), nullable=False, default="lilac")
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)

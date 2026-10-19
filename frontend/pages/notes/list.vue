@@ -13,18 +13,28 @@ function addDays(dateStr, delta) {
   d.setDate(d.getDate() + delta)
   return fmtDate(d)
 }
+function dateOf(y, m, d) {
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
 
 const todayStr = fmtDate(nowLocal())
 const tomorrowStr = addDays(todayStr, 1)
 
-const tab = ref('todo')            // todo / note
-const viewMode = ref('schedule')   // schedule 日程 / list 清单 / board 看板
+const tab = ref('todo')               // todo / note
+const viewMode = ref('calendar')      // calendar 月历 / list 清单 / board 看板
 const keyword = ref('')
 const loading = ref(false)
 
 const openTodos = ref([])
 const doneTodos = ref([])
 const noteItems = ref([])
+
+// 任务颜色（与编辑页一致）
+const TASK_COLORS = {
+  lilac: '#B9A7FF', sky: '#9DB7F5', mint: '#8FDCC2',
+  peach: '#F6B8A8', sand: '#F2D48A', rose: '#F3B8CB',
+}
+function taskColor(c) { return TASK_COLORS[c] || TASK_COLORS.lilac }
 
 // ---------- 数据 ----------
 async function load() {
@@ -33,7 +43,7 @@ async function load() {
     if (tab.value === 'todo') {
       const [openRes, doneRes] = await Promise.all([
         apiNotes({ note_type: 'todo', status: 'open', q: keyword.value, page: 1, page_size: 100 }),
-        apiNotes({ note_type: 'todo', status: 'done', q: keyword.value, page: 1, page_size: 50 }),
+        apiNotes({ note_type: 'todo', status: 'done', q: keyword.value, page: 1, page_size: 100 }),
       ])
       openTodos.value = openRes.items
       doneTodos.value = doneRes.items
@@ -53,7 +63,8 @@ async function toggleDone(n) {
   try {
     await apiUpdateNote(n.id, {
       title: n.title, content: n.content, note_type: n.note_type,
-      status: next, due_at: n.due_at, priority: n.priority, pinned: n.pinned,
+      status: next, due_at: n.due_at, priority: n.priority,
+      pinned: n.pinned, color: n.color || 'lilac',
     })
     if (next === 'done') uni.showToast({ title: '已完成 ✓', icon: 'none' })
     load()
@@ -64,7 +75,8 @@ async function togglePin(n) {
   try {
     await apiUpdateNote(n.id, {
       title: n.title, content: n.content, note_type: n.note_type,
-      status: n.status, due_at: n.due_at, priority: n.priority, pinned: !n.pinned,
+      status: n.status, due_at: n.due_at, priority: n.priority,
+      pinned: !n.pinned, color: n.color || 'lilac',
     })
     uni.showToast({ title: n.pinned ? '已取消置顶' : '已置顶', icon: 'none' })
     load()
@@ -91,44 +103,108 @@ const PRIORITY_META = {
   low: { label: '低', cls: 'pri-low' },
 }
 
-// ---------- 日程（今日/指定日） ----------
-const todoDate = ref(todayStr)
-const todoDateLabel = computed(() => {
-  const d = new Date(todoDate.value + 'T00:00:00')
+// ---------- 月历 ----------
+const calToday = nowLocal()
+const calYear = ref(calToday.getFullYear())
+const calMonth = ref(calToday.getMonth() + 1)   // 1-12
+const calSelected = ref(todayStr)
+
+const calTitle = computed(() => `${calYear.value}年${calMonth.value}月`)
+
+const calSelectedLabel = computed(() => {
+  const d = new Date(calSelected.value + 'T00:00:00')
   const names = '日一二三四五六'
-  const prefix = todoDate.value === todayStr ? '今天 · ' : ''
+  const prefix = calSelected.value === todayStr ? '今天 · ' : ''
   return `${prefix}${d.getMonth() + 1}月${d.getDate()}日 周${names[d.getDay()]}`
 })
 
-function timeLabel(n) {
-  return String(n.due_at || '').slice(11, 16) || '18:00'
+const tasksByDate = computed(() => {
+  const map = {}
+  for (const n of [...openTodos.value, ...doneTodos.value]) {
+    if (!n.due_at) continue
+    const d = String(n.due_at).slice(0, 10)
+    if (!map[d]) map[d] = []
+    map[d].push(n)
+  }
+  for (const key of Object.keys(map)) {
+    map[key].sort((a, b) =>
+      (a.status === 'done') - (b.status === 'done') ||
+      String(a.due_at).localeCompare(String(b.due_at)))
+  }
+  return map
+})
+
+const calCells = computed(() => {
+  const first = new Date(calYear.value, calMonth.value - 1, 1)
+  const offset = (first.getDay() + 6) % 7   // 周一开头
+  const start = new Date(first)
+  start.setDate(1 - offset)
+  const cells = []
+  for (let i = 0; i < 42; i += 1) {
+    const d = new Date(start)
+    d.setDate(start.getDate() + i)
+    const date = fmtDate(d)
+    const tasks = tasksByDate.value[date] || []
+    cells.push({
+      key: date,
+      date,
+      day: d.getDate(),
+      inMonth: d.getMonth() === calMonth.value - 1,
+      isToday: date === todayStr,
+      selected: date === calSelected.value,
+      tags: tasks.slice(0, 2),
+      more: Math.max(0, tasks.length - 2),
+    })
+  }
+  return cells
+})
+
+const dayTaskList = computed(() => tasksByDate.value[calSelected.value] || [])
+
+const weekDaysHeader = ['一', '二', '三', '四', '五', '六', '日']
+
+function shiftMonth(delta) {
+  let y = calYear.value
+  let m = calMonth.value + delta
+  if (m < 1) { y -= 1; m = 12 }
+  else if (m > 12) { y += 1; m = 1 }
+  calYear.value = y
+  calMonth.value = m
+  const daysInMonth = new Date(y, m, 0).getDate()
+  const day = Math.min(Number(calSelected.value.slice(8)), daysInMonth)
+  calSelected.value = dateOf(y, m, day)
 }
 
-const dayTasks = computed(() =>
-  openTodos.value
-    .filter(n => n.due_at && String(n.due_at).slice(0, 10) === todoDate.value)
-    .sort((a, b) => String(a.due_at).localeCompare(String(b.due_at))))
+function goToday() {
+  const d = nowLocal()
+  calYear.value = d.getFullYear()
+  calMonth.value = d.getMonth() + 1
+  calSelected.value = todayStr
+}
 
-const overdueTasks = computed(() =>
-  openTodos.value.filter(n => n.due_at && String(n.due_at).slice(0, 10) < todayStr))
+function selectCell(c) {
+  calSelected.value = c.date
+  if (!c.inMonth) {
+    calYear.value = Number(c.date.slice(0, 4))
+    calMonth.value = Number(c.date.slice(5, 7))
+  }
+}
 
-const unscheduledTasks = computed(() => openTodos.value.filter(n => !n.due_at))
+function shortTitle(title) {
+  return title.length > 4 ? title.slice(0, 4) : title
+}
 
-function shiftTodoDate(delta) { todoDate.value = addDays(todoDate.value, delta) }
-function resetTodoDate() { todoDate.value = todayStr }
+function taskTime(n) {
+  return String(n.due_at || '').slice(11, 16) || '18:00'
+}
 
 // ---------- 统计 ----------
 const openCount = computed(() => openTodos.value.length)
 const doneCount = computed(() => doneTodos.value.length)
-const overdueCount = computed(() => overdueTasks.value.length)
-const donePct = computed(() => {
-  const total = openCount.value + doneCount.value
-  return total ? Math.round(doneCount.value / total * 100) : 0
-})
-const ringStyle = computed(() =>
-  `conic-gradient(#8B7FE8 0% ${donePct.value}%, rgba(255,255,255,.35) ${donePct.value}% 100%)`)
+const overdueCount = computed(() =>
+  openTodos.value.filter(n => n.due_at && String(n.due_at).slice(0, 10) < todayStr).length)
 
-// ---------- 清单/看板 ----------
+// ---------- 清单 / 看板 ----------
 const listGroups = computed(() => {
   const g = { overdue: [], today: [], week: [], later: [] }
   const weekEnd = addDays(todayStr, 7)
@@ -139,6 +215,9 @@ const listGroups = computed(() => {
     else if (d === todayStr) g.today.push(n)
     else if (d <= weekEnd) g.week.push(n)
     else g.later.push(n)
+  }
+  for (const key of Object.keys(g)) {
+    g[key].sort((a, b) => String(a.due_at || '9999').localeCompare(String(b.due_at || '9999')))
   }
   return [
     { key: 'overdue', label: '已逾期', items: g.overdue, cls: 'g-over' },
@@ -152,14 +231,15 @@ function isOverdue(n) {
   const d = n.due_at ? String(n.due_at).slice(0, 10) : ''
   return !!d && d < todayStr
 }
+
 const boardColumns = computed(() => [
   { key: 'overdue', label: '逾期', cls: 'col-over', items: openTodos.value.filter(isOverdue) },
   { key: 'open', label: '待办', cls: 'col-open', items: openTodos.value.filter(n => !isOverdue(n)) },
   { key: 'done', label: '已完成', cls: 'col-done', items: doneTodos.value },
 ])
 
-// ---------- 便签日历条 ----------
-const selectedDate = ref(todayStr)
+// ---------- 生活便签 ----------
+const noteDate = ref(todayStr)
 const weekOffset = ref(0)
 
 const weekStart = computed(() => {
@@ -189,21 +269,21 @@ const weekDays = computed(() => Array.from({ length: 7 }, (_, i) => {
     weekday: ['一', '二', '三', '四', '五', '六', '日'][i],
     hasNotes: !!noteDateCounts.value[date],
     isToday: date === todayStr,
-    selected: date === selectedDate.value,
+    selected: date === noteDate.value,
   }
 }))
 
 const monthLabel = computed(() =>
   `${weekStart.value.getFullYear()}年${weekStart.value.getMonth() + 1}月`)
 
-const selectedDateLabel = computed(() => {
-  const d = new Date(selectedDate.value + 'T00:00:00')
+const noteDateLabel = computed(() => {
+  const d = new Date(noteDate.value + 'T00:00:00')
   const names = '日一二三四五六'
   return `${d.getMonth() + 1}月${d.getDate()}日 周${names[d.getDay()]}`
 })
 
 const dayNotes = computed(() =>
-  noteItems.value.filter(n => String(n.created_at).slice(0, 10) === selectedDate.value))
+  noteItems.value.filter(n => String(n.created_at).slice(0, 10) === noteDate.value))
 
 const searchActive = computed(() => keyword.value.trim().length > 0)
 
@@ -223,22 +303,41 @@ const searchGroups = computed(() => {
 function dateLabel(d) {
   if (d === todayStr) return '今天'
   if (d === tomorrowStr) return '明天'
-  const y = addDays(todayStr, -1)
-  if (d === y) return '昨天'
+  if (d === addDays(todayStr, -1)) return '昨天'
   return `${d.slice(0, 4)}年${Number(d.slice(5, 7))}月${Number(d.slice(8))}日`
 }
 
-function selectDate(date) { selectedDate.value = date }
+function selectNoteDate(date) { noteDate.value = date }
+
 function shiftWeek(delta) {
   weekOffset.value += delta
-  selectedDate.value = addDays(selectedDate.value, delta * 7)
+  noteDate.value = addDays(noteDate.value, delta * 7)
 }
 
+function jumpNoteDate(e) {
+  const value = e.detail.value
+  noteDate.value = value
+  const target = new Date(value + 'T00:00:00')
+  const base = nowLocal()
+  base.setHours(0, 0, 0, 0)
+  const thisMonday = new Date(base)
+  thisMonday.setDate(base.getDate() - ((base.getDay() + 6) % 7))
+  const targetMonday = new Date(target)
+  targetMonday.setDate(target.getDate() - ((target.getDay() + 6) % 7))
+  weekOffset.value = Math.round((targetMonday - thisMonday) / (7 * 86400000))
+}
+
+// ---------- 跳转 ----------
 function goEdit(id) {
-  let url = '/pages/notes/edit'
-  if (id) url += '?id=' + id
-  else url += '?type=' + tab.value
-  uni.navigateTo({ url })
+  uni.navigateTo({ url: '/pages/notes/edit?id=' + id })
+}
+
+function goNewTask() {
+  uni.navigateTo({ url: `/pages/notes/edit?type=todo&date=${calSelected.value}` })
+}
+
+function goNewNote() {
+  uni.navigateTo({ url: '/pages/notes/edit?type=note' })
 }
 
 onShow(load)
@@ -261,80 +360,84 @@ onShow(load)
 
     <!-- ===== 待办 ===== -->
     <block v-if="tab === 'todo'">
-      <!-- 统计条 -->
-      <view class="glass stat-bar">
-        <view class="ring" :style="{ background: ringStyle }">
-          <view class="ring-hole"><text class="ring-pct">{{ donePct }}%</text></view>
-        </view>
-        <view class="stat-items">
-          <view class="stat-item"><text class="stat-num">{{ openCount }}</text><text class="stat-label">待办中</text></view>
-          <view class="stat-item"><text class="stat-num over">{{ overdueCount }}</text><text class="stat-label">已逾期</text></view>
-          <view class="stat-item"><text class="stat-num done">{{ doneCount }}</text><text class="stat-label">已完成</text></view>
-        </view>
-      </view>
-
-      <!-- 视图切换 -->
       <view class="view-switch">
-        <text :class="['v-btn', viewMode === 'schedule' && 'v-active']" @click="setView('schedule')">日程</text>
+        <text :class="['v-btn', viewMode === 'calendar' && 'v-active']" @click="setView('calendar')">月历</text>
         <text :class="['v-btn', viewMode === 'list' && 'v-active']" @click="setView('list')">清单</text>
         <text :class="['v-btn', viewMode === 'board' && 'v-active']" @click="setView('board')">看板</text>
+        <text class="v-stat">待办 {{ openCount }} · 逾期 {{ overdueCount }} · 完成 {{ doneCount }}</text>
       </view>
 
-      <!-- 日程视图 -->
-      <block v-if="viewMode === 'schedule'">
-        <view class="glass day-nav">
-          <text class="nav-arrow" @click="shiftTodoDate(-1)">‹</text>
-          <view class="day-nav-main">
-            <text class="day-nav-date">{{ todoDateLabel }}</text>
-            <text v-if="todoDate !== todayStr" class="back-today" @click="resetTodoDate">回到今天</text>
-          </view>
-          <text class="nav-arrow" @click="shiftTodoDate(1)">›</text>
-        </view>
-
-        <view v-if="overdueTasks.length" class="glass overdue-block">
-          <view class="block-head"><view class="g-dot g-over" /><text>逾期未完成</text><text class="block-count">{{ overdueTasks.length }}</text></view>
-          <view class="sched-task" v-for="n in overdueTasks" :key="n.id" @click="goEdit(n.id)">
-            <view class="sched-task-main">
-              <text class="sched-title">{{ n.title }}</text>
-              <text class="due due-over">⏰ {{ dueInfo(n).text }}</text>
-            </view>
-            <text class="done-btn" @click.stop="toggleDone(n)">完成</text>
+      <!-- 月历视图 -->
+      <block v-if="viewMode === 'calendar'">
+        <!-- 工具栏 -->
+        <view class="glass cal-head">
+          <text class="cal-title">{{ calTitle }}</text>
+          <view class="cal-actions">
+            <text class="cal-btn" @click="shiftMonth(-1)">‹</text>
+            <text class="cal-today-btn" @click="goToday">今天</text>
+            <text class="cal-btn" @click="shiftMonth(1)">›</text>
+            <text class="cal-add" @click="goNewTask">＋</text>
           </view>
         </view>
 
-        <view class="schedule">
-          <view class="sched-row" v-for="n in dayTasks" :key="n.id">
-            <text class="sched-time">{{ timeLabel(n) }}</text>
-            <view class="sched-axis"><view class="sched-node" /></view>
-            <view class="glass sched-card" @click="goEdit(n.id)">
-              <view class="sched-card-head">
-                <text class="sched-title">{{ n.title }}</text>
-                <text v-if="PRIORITY_META[n.priority]" class="pri-tag" :class="PRIORITY_META[n.priority].cls">
-                  {{ PRIORITY_META[n.priority].label }}
-                </text>
-                <image v-if="n.pinned" class="pin-mark" src="/static/icons/act_pin.png" mode="widthFix" />
-              </view>
-              <text class="sched-content" v-if="n.content">{{ n.content }}</text>
-              <view class="sched-foot">
-                <text class="due" :class="dueInfo(n).cls">{{ dueInfo(n).text }}</text>
-                <text class="done-btn" @click.stop="toggleDone(n)">完成</text>
+        <!-- 月历 -->
+        <view class="glass cal-panel">
+          <view class="cal-week">
+            <text v-for="w in weekDaysHeader" :key="w" :class="{ wk: w === '六' || w === '日' }">{{ w }}</text>
+          </view>
+          <view class="cal-grid">
+            <view v-for="c in calCells" :key="c.key"
+              class="cal-cell"
+              :class="{ dim: !c.inMonth, sel: c.selected, today: c.isToday }"
+              @click="selectCell(c)">
+              <text class="cal-num">{{ c.day }}</text>
+              <view class="cal-tags" v-if="c.tags.length">
+                <view class="cal-tag" v-for="t in c.tags" :key="t.id"
+                  :style="{ background: taskColor(t.color) + '33' }">
+                  <view class="tag-dot" :style="{ background: taskColor(t.color) }" />
+                  <text class="tag-text">{{ shortTitle(t.title) }}</text>
+                </view>
+                <text v-if="c.more" class="cal-more">+{{ c.more }}</text>
               </view>
             </view>
           </view>
-          <view v-if="!dayTasks.length" class="glass sched-empty">
+        </view>
+
+        <!-- 当日任务清单 -->
+        <view class="glass day-tasks">
+          <view class="day-head">
+            <view class="day-head-left">
+              <text class="day-date">{{ calSelectedLabel }}</text>
+              <text class="day-count">{{ dayTaskList.length }} 项任务</text>
+            </view>
+            <text class="day-add" @click="goNewTask">＋ 新建任务</text>
+          </view>
+          <view v-if="dayTaskList.length" class="day-list">
+            <view class="task-row" v-for="n in dayTaskList" :key="n.id"
+              :class="{ 'task-done': n.status === 'done' }" @click="goEdit(n.id)">
+              <view class="check" :class="{ checked: n.status === 'done' }" @click.stop="toggleDone(n)">
+                {{ n.status === 'done' ? '✓' : '' }}
+              </view>
+              <view class="task-color" :style="{ background: taskColor(n.color) }" />
+              <view class="task-main">
+                <view class="t-title-row">
+                  <text class="t-title">{{ n.title }}</text>
+                  <text v-if="PRIORITY_META[n.priority]" class="pri-tag" :class="PRIORITY_META[n.priority].cls">
+                    {{ PRIORITY_META[n.priority].label }}
+                  </text>
+                  <image v-if="n.pinned" class="pin-mark" src="/static/icons/act_pin.png" mode="widthFix" />
+                </view>
+                <text class="t-note" v-if="n.content">{{ n.content }}</text>
+                <view class="t-meta">
+                  <text class="t-time">⏰ {{ taskTime(n) }}</text>
+                  <text v-if="n.status === 'done'" class="t-done-label">已完成</text>
+                </view>
+              </view>
+            </view>
+          </view>
+          <view v-else class="day-empty">
             <image class="empty-animal" src="/static/doodles/rabbit.png" mode="widthFix" />
-            <text>这一天还没有安排，点右下角新建一个吧</text>
-          </view>
-        </view>
-
-        <view v-if="unscheduledTasks.length" class="glass unsched-block">
-          <view class="block-head"><view class="g-dot g-later" /><text>随时 / 未安排</text><text class="block-count">{{ unscheduledTasks.length }}</text></view>
-          <view class="sched-task" v-for="n in unscheduledTasks" :key="n.id" @click="goEdit(n.id)">
-            <view class="sched-task-main">
-              <text class="sched-title">{{ n.title }}</text>
-              <text class="due due-none">未设置时间</text>
-            </view>
-            <text class="done-btn" @click.stop="toggleDone(n)">完成</text>
+            <text>这一天没有任务，点「＋新建任务」添加</text>
           </view>
         </view>
       </block>
@@ -349,16 +452,17 @@ onShow(load)
           </view>
           <view class="glass task-card" v-for="n in g.items" :key="n.id" @click="goEdit(n.id)">
             <view class="check" @click.stop="toggleDone(n)"></view>
+            <view class="task-color" :style="{ background: taskColor(n.color) }" />
             <view class="task-main">
-              <view class="title-row">
-                <text class="task-title">{{ n.title }}</text>
+              <view class="t-title-row">
+                <text class="t-title">{{ n.title }}</text>
                 <text v-if="PRIORITY_META[n.priority]" class="pri-tag" :class="PRIORITY_META[n.priority].cls">
                   {{ PRIORITY_META[n.priority].label }}
                 </text>
                 <image v-if="n.pinned" class="pin-mark" src="/static/icons/act_pin.png" mode="widthFix" />
               </view>
-              <text class="task-content" v-if="n.content">{{ n.content }}</text>
-              <view class="meta-row">
+              <text class="t-note" v-if="n.content">{{ n.content }}</text>
+              <view class="t-meta">
                 <text v-if="dueInfo(n)" class="due" :class="dueInfo(n).cls">⏰ {{ dueInfo(n).text }}</text>
                 <text v-else class="due due-none">无截止时间</text>
               </view>
@@ -368,35 +472,39 @@ onShow(load)
             </text>
           </view>
         </view>
-        <view v-if="!listGroups.length && !loading" class="glass sched-empty">
+        <view v-if="!listGroups.length && !loading" class="glass day-empty">
           <image class="empty-animal" src="/static/doodles/rabbit.png" mode="widthFix" />
           <text>今天没有待办，轻松一天</text>
         </view>
       </block>
 
-      <!-- 看板视图 -->
+      <!-- 看板视图（竖向） -->
       <block v-else>
-        <scroll-view scroll-x class="board" v-if="openCount || doneCount">
-          <view class="board-col glass" v-for="col in boardColumns" :key="col.key">
+        <view class="board-v" v-if="openCount || doneCount">
+          <view class="glass board-sec" v-for="col in boardColumns" :key="col.key">
             <view class="board-head" :class="col.cls">
-              <text>{{ col.label }}</text><text class="board-count">{{ col.items.length }}</text>
+              <text>{{ col.label }}</text>
+              <text class="board-count">{{ col.items.length }}</text>
             </view>
-            <view class="b-card" v-for="n in col.items" :key="n.id" @click="goEdit(n.id)">
-              <text class="b-title">{{ n.title }}</text>
-              <view class="b-meta">
-                <text v-if="dueInfo(n)" class="due" :class="dueInfo(n).cls">{{ dueInfo(n).text }}</text>
-                <text v-if="PRIORITY_META[n.priority]" class="pri-tag" :class="PRIORITY_META[n.priority].cls">
-                  {{ PRIORITY_META[n.priority].label }}
-                </text>
+            <view class="b-row" v-for="n in col.items" :key="n.id"
+              :class="{ 'task-done': n.status === 'done' }" @click="goEdit(n.id)">
+              <view class="task-color" :style="{ background: taskColor(n.color) }" />
+              <view class="b-main">
+                <text class="b-title">{{ n.title }}</text>
+                <view class="b-meta">
+                  <text v-if="dueInfo(n)" class="due" :class="dueInfo(n).cls">{{ dueInfo(n).text }}</text>
+                  <text v-else class="due due-none">无截止时间</text>
+                  <text v-if="PRIORITY_META[n.priority]" class="pri-tag" :class="PRIORITY_META[n.priority].cls">
+                    {{ PRIORITY_META[n.priority].label }}
+                  </text>
+                </view>
               </view>
-              <view class="b-actions" v-if="col.key === 'overdue' || col.key === 'open'">
-                <text class="b-btn" @click.stop="toggleDone(n)">完成</text>
-              </view>
+              <text class="b-done-btn" v-if="col.key !== 'done'" @click.stop="toggleDone(n)">完成</text>
             </view>
             <view v-if="!col.items.length" class="b-empty">暂无</view>
           </view>
-        </scroll-view>
-        <view v-else class="glass sched-empty">
+        </view>
+        <view v-else class="glass day-empty">
           <image class="empty-animal" src="/static/doodles/rabbit.png" mode="widthFix" />
           <text>还没有任务，点右下角新建</text>
         </view>
@@ -405,13 +513,12 @@ onShow(load)
 
     <!-- ===== 生活便签 ===== -->
     <block v-else>
-      <!-- 7 日日历条 -->
       <view class="glass week-bar">
         <text class="week-arrow" @click="shiftWeek(-1)">‹</text>
         <view class="week-days">
           <view v-for="d in weekDays" :key="d.date"
             :class="['day-cell', d.selected && 'day-active', d.isToday && 'day-today']"
-            @click="selectDate(d.date)">
+            @click="selectNoteDate(d.date)">
             <text class="day-wd">{{ d.weekday }}</text>
             <text class="day-dd">{{ d.day }}</text>
             <view v-if="d.hasNotes" class="note-dot" />
@@ -423,12 +530,16 @@ onShow(load)
       <view class="notes-head">
         <view class="notes-head-left">
           <text class="notes-date">{{ searchActive ? '搜索结果' : monthLabel }}</text>
-          <text class="notes-sub">{{ searchActive ? `“${keyword}” 相关便签` : `${selectedDateLabel} · ${dayNotes.length} 条便签` }}</text>
+          <text class="notes-sub">{{ searchActive ? `“${keyword}” 相关便签` : `${noteDateLabel} · ${dayNotes.length} 条便签` }}</text>
         </view>
-        <image class="week-rabbit" src="/static/doodles/rabbit.png" mode="widthFix" />
+        <view class="notes-head-right">
+          <picker mode="date" :value="noteDate" @change="jumpNoteDate">
+            <text class="pick-date">选择日期 ▾</text>
+          </picker>
+          <image class="week-rabbit" src="/static/doodles/rabbit.png" mode="widthFix" />
+        </view>
       </view>
 
-      <!-- 当天便签 -->
       <block v-if="!searchActive">
         <view v-if="dayNotes.length" class="note-list">
           <view class="glass note-card" v-for="n in dayNotes" :key="n.id" @click="goEdit(n.id)">
@@ -445,7 +556,6 @@ onShow(load)
         </view>
       </block>
 
-      <!-- 搜索结果（跨日期） -->
       <block v-else>
         <view v-for="g in searchGroups" :key="g.date" class="search-group">
           <view class="search-date">{{ g.label }}</view>
@@ -465,7 +575,7 @@ onShow(load)
       <image class="page-bear" src="/static/doodles/bear.png" mode="widthFix" />
     </block>
 
-    <view class="fab" @click="goEdit()">＋</view>
+    <view class="fab" @click="tab === 'todo' ? goNewTask() : goNewNote()">＋</view>
   </view>
 </template>
 
@@ -496,119 +606,122 @@ onShow(load)
 .ph { color: #C3C7DA; }
 .search-btn { color: #6C7BF5; font-size: 26rpx; font-weight: 600; }
 
-/* 统计条 */
-.stat-bar { display: flex; align-items: center; margin: 18rpx 24rpx 0; padding: 20rpx 24rpx; }
-.ring { width: 110rpx; height: 110rpx; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; }
-.ring-hole { width: 82rpx; height: 82rpx; border-radius: 50%; background: rgba(255, 253, 248, .95);
-  display: flex; align-items: center; justify-content: center; }
-.ring-pct { font-size: 24rpx; font-weight: 800; color: #5A54B8; }
-.stat-items { flex: 1; display: flex; justify-content: space-around; margin-left: 14rpx; }
-.stat-item { display: flex; flex-direction: column; align-items: center; gap: 2rpx; }
-.stat-num { font-size: 32rpx; font-weight: 800; color: #4A4F6B; }
-.stat-num.over { color: #E45858; }
-.stat-num.done { color: #1FA97F; }
-.stat-label { font-size: 21rpx; color: #A6AAC2; }
-
 /* 视图切换 */
-.view-switch { display: flex; justify-content: flex-end; margin: 6rpx 28rpx 8rpx; gap: 12rpx; }
-.v-btn { font-size: 23rpx; color: #8A90A8; background: rgba(255, 253, 248, .55); border-radius: 999rpx; padding: 8rpx 26rpx;
-  border: 1rpx solid rgba(255,255,255,.7); }
+.view-switch { display: flex; align-items: center; gap: 12rpx; margin: 16rpx 24rpx 6rpx; flex-wrap: wrap; }
+.v-btn { font-size: 23rpx; color: #8A90A8; background: rgba(255, 253, 248, .55); border-radius: 999rpx;
+  padding: 8rpx 24rpx; border: 1rpx solid rgba(255,255,255,.7); }
 .v-active { background: #8B7FE8; color: #fff; font-weight: 700; }
+.v-stat { margin-left: auto; font-size: 21rpx; color: #8A90A8; }
 
-/* 日程 */
-.day-nav { display: flex; align-items: center; justify-content: space-between;
-  margin: 6rpx 24rpx 14rpx; padding: 18rpx 24rpx; }
-.nav-arrow { font-size: 40rpx; color: #6B7089; padding: 0 16rpx; }
-.day-nav-main { display: flex; flex-direction: column; align-items: center; gap: 4rpx; }
-.day-nav-date { font-size: 29rpx; font-weight: 800; color: #4A4F6B; letter-spacing: 1rpx; }
-.back-today { font-size: 21rpx; color: #6C7BF5; }
+/* 月历工具栏 */
+.cal-head { display: flex; align-items: center; justify-content: space-between;
+  margin: 8rpx 24rpx 12rpx; padding: 18rpx 22rpx; }
+.cal-title { font-size: 30rpx; font-weight: 800; color: #4A4F6B; letter-spacing: 1rpx; }
+.cal-actions { display: flex; align-items: center; gap: 12rpx; }
+.cal-btn { font-size: 36rpx; color: #6B7089; padding: 0 10rpx; }
+.cal-today-btn { font-size: 22rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 999rpx;
+  padding: 8rpx 20rpx; }
+.cal-add { font-size: 38rpx; color: #fff; background: linear-gradient(135deg, #7C8BFF, #A78BFA);
+  width: 56rpx; height: 56rpx; border-radius: 28rpx; display: flex; align-items: center;
+  justify-content: center; line-height: 1; margin-left: 6rpx; }
 
-.schedule { padding: 0 24rpx; }
-.sched-row { display: flex; align-items: flex-start; }
-.sched-time { width: 92rpx; flex-shrink: 0; text-align: right; padding-top: 22rpx;
-  font-size: 22rpx; color: #8A90A8; }
-.sched-axis { width: 44rpx; flex-shrink: 0; position: relative; align-self: stretch;
-  display: flex; flex-direction: column; align-items: center; }
-.sched-node { width: 14rpx; height: 14rpx; border-radius: 7rpx; background: #8B7FE8; margin-top: 30rpx;
-  box-shadow: 0 0 0 6rpx rgba(242, 238, 252, .9); }
-.sched-axis::after { content: ''; flex: 1; width: 0; border-left: 2rpx dashed #DCD3F2; margin-top: 6rpx; }
-.sched-row:last-child .sched-axis::after { display: none; }
-.sched-card { flex: 1; padding: 20rpx 22rpx; margin-bottom: 18rpx; }
-.sched-card:active { opacity: .85; }
-.sched-card-head { display: flex; align-items: center; gap: 10rpx; flex-wrap: wrap; }
-.sched-title { font-size: 28rpx; font-weight: 700; color: #3A3F58; }
-.sched-content { display: block; font-size: 23rpx; color: #7A7F96; margin-top: 8rpx; line-height: 1.6;
+/* 月历 */
+.cal-panel { margin: 0 24rpx 14rpx; padding: 18rpx 14rpx 14rpx; }
+.cal-week { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 8rpx; }
+.cal-week text { text-align: center; font-size: 21rpx; color: #8A90A8; }
+.cal-week .wk { color: #C77BA6; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6rpx; }
+.cal-cell { min-height: 118rpx; border-radius: 16rpx; padding: 6rpx 4rpx;
+  display: flex; flex-direction: column; align-items: stretch; box-sizing: border-box;
+  border: 2rpx solid transparent; }
+.cal-cell.dim .cal-num { color: #C3C7DA; }
+.cal-cell.today { border-color: #C9BFF0; }
+.cal-cell.sel { background: #EFEAFE; border: 2rpx dashed #8B7FE8; }
+.cal-num { font-size: 23rpx; font-weight: 700; color: #4A4F6B; text-align: center; line-height: 32rpx; }
+.cal-cell.today .cal-num { color: #8B7FE8; font-weight: 800; }
+.cal-tags { display: flex; flex-direction: column; gap: 3rpx; margin-top: 2rpx; }
+.cal-tag { display: flex; align-items: center; gap: 4rpx; border-radius: 6rpx;
+  padding: 2rpx 5rpx; overflow: hidden; }
+.tag-dot { width: 7rpx; height: 7rpx; border-radius: 4rpx; flex-shrink: 0; }
+.tag-text { font-size: 16rpx; color: #4A4F6B; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.cal-more { font-size: 16rpx; color: #8A90A8; padding-left: 4rpx; }
+
+/* 当日任务清单 */
+.day-tasks { margin: 0 24rpx; padding: 22rpx 22rpx 12rpx; }
+.day-head { display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 14rpx; border-bottom: 1rpx dashed rgba(231, 227, 244, .9); }
+.day-head-left { display: flex; flex-direction: column; gap: 4rpx; }
+.day-date { font-size: 28rpx; font-weight: 800; color: #4A4F6B; }
+.day-count { font-size: 21rpx; color: #A6AAC2; }
+.day-add { font-size: 23rpx; color: #6C7BF5; font-weight: 600; }
+.day-list { display: flex; flex-direction: column; }
+.task-row { display: flex; align-items: flex-start; gap: 14rpx; padding: 18rpx 0;
+  border-bottom: 1rpx dashed rgba(231, 227, 244, .8); }
+.task-row:last-child { border-bottom: none; }
+.task-done .t-title { text-decoration: line-through; color: #A6AAC2; }
+.task-done { opacity: .78; }
+.check { width: 42rpx; height: 42rpx; border-radius: 21rpx; border: 3rpx solid #D6D9E8;
+  flex-shrink: 0; margin-top: 2rpx; display: flex; align-items: center;
+  justify-content: center; color: #fff; font-size: 24rpx; background: rgba(255,253,248,.7); }
+.check.checked { background: #1FA97F; border-color: #1FA97F; }
+.task-color { width: 8rpx; align-self: stretch; border-radius: 4rpx; flex-shrink: 0; margin-top: 2rpx; }
+.task-main { flex: 1; min-width: 0; }
+.t-title-row { display: flex; align-items: center; gap: 10rpx; flex-wrap: wrap; }
+.t-title { font-size: 27rpx; font-weight: 600; color: #3A3F58; }
+.t-note { display: block; font-size: 22rpx; color: #8A90A8; margin-top: 6rpx;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sched-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12rpx; }
-.done-btn { font-size: 22rpx; color: #6C7BF5; background: rgba(255, 253, 248, .8);
-  border: 2rpx solid #C9CFFF; border-radius: 999rpx; padding: 6rpx 20rpx; }
-.sched-empty { margin: 10rpx 0; padding: 40rpx 20rpx; text-align: center; font-size: 24rpx; color: #A6AAC2; }
+.t-meta { display: flex; align-items: center; gap: 14rpx; margin-top: 8rpx; }
+.t-time { font-size: 21rpx; color: #8A90A8; }
+.t-done-label { font-size: 20rpx; color: #1FA97F; background: #E9F8F2; border-radius: 8rpx;
+  padding: 2rpx 10rpx; }
+.pri-tag { font-size: 19rpx; border-radius: 8rpx; padding: 2rpx 10rpx; font-weight: 700; }
+.pri-high { background: #FFEDEE; color: #E45858; }
+.pri-low { background: rgba(244, 242, 250, .9); color: #8A90A8; }
+.pin-mark { width: 26rpx; height: 26rpx; }
+.day-empty { padding: 40rpx 10rpx; text-align: center; font-size: 23rpx; color: #A6AAC2; }
+.empty-animal { width: 140rpx; display: block; margin: 0 auto 10rpx; }
 
-.overdue-block, .unsched-block { margin: 0 24rpx 16rpx; padding: 20rpx 22rpx; }
-.block-head { display: flex; align-items: center; gap: 10rpx; font-size: 25rpx; font-weight: 700;
-  color: #4A4F6B; margin-bottom: 8rpx; }
-.block-count { margin-left: auto; font-size: 21rpx; color: #8A90A8; font-weight: 400; }
-.sched-task { display: flex; align-items: center; justify-content: space-between; gap: 14rpx;
-  padding: 14rpx 0; border-bottom: 1rpx dashed rgba(231, 227, 244, .9); }
-.sched-task:last-child { border-bottom: none; }
-.sched-task-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6rpx; }
-.sched-task .sched-title { font-size: 26rpx; }
-
-/* 动效点的颜色 */
+/* 清单 */
+.group { margin-top: 8rpx; }
+.group-head { display: flex; align-items: center; gap: 10rpx; margin: 16rpx 28rpx 6rpx; }
 .g-dot { width: 14rpx; height: 14rpx; border-radius: 7rpx; }
 .g-over { background: #E45858; }
 .g-today { background: #F2B45C; }
 .g-week { background: #6C7BF5; }
 .g-later { background: #B9AEDC; }
-
-/* 清单 */
-.group { margin-top: 8rpx; }
-.group-head { display: flex; align-items: center; gap: 10rpx; margin: 16rpx 28rpx 6rpx; }
 .group-title { font-size: 25rpx; font-weight: 700; color: #4A4F6B; }
 .group-count { font-size: 21rpx; color: #A6AAC2; }
-.task-card { display: flex; align-items: flex-start; margin: 12rpx 24rpx; padding: 22rpx 20rpx;
-  border-left: 10rpx solid #FFD98E; }
+.task-card { display: flex; align-items: flex-start; margin: 12rpx 24rpx; padding: 20rpx 18rpx; gap: 12rpx; }
 .task-card:active { opacity: .85; }
-.check { width: 44rpx; height: 44rpx; border-radius: 22rpx; border: 3rpx solid #D6D9E8;
-  margin-right: 16rpx; margin-top: 2rpx; flex-shrink: 0; }
-.task-main { flex: 1; min-width: 0; }
-.title-row { display: flex; align-items: center; gap: 12rpx; flex-wrap: wrap; }
-.task-title { font-size: 28rpx; font-weight: 600; }
-.pri-tag { font-size: 20rpx; border-radius: 8rpx; padding: 2rpx 12rpx; font-weight: 700; }
-.pri-high { background: #FFEDEE; color: #E45858; }
-.pri-low { background: rgba(244, 242, 250, .9); color: #8A90A8; }
-.pin-mark { width: 28rpx; height: 28rpx; }
-.task-content { display: block; font-size: 23rpx; color: #8A90A8; margin-top: 8rpx;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.meta-row { display: flex; align-items: center; margin-top: 10rpx; }
-.due { font-size: 22rpx; }
+.due { font-size: 21rpx; }
 .due-over { color: #E45858; font-weight: 700; }
 .due-today { color: #F2A93B; font-weight: 600; }
 .due-soon { color: #6C7BF5; }
 .due-normal { color: #A6AAC2; }
 .due-none { color: #C3C7DA; }
-.pin-btn { font-size: 22rpx; color: #A6AAC2; padding: 6rpx 0 6rpx 14rpx; flex-shrink: 0; }
+.pin-btn { font-size: 22rpx; color: #A6AAC2; padding: 6rpx 0 6rpx 10rpx; flex-shrink: 0; }
 .pin-on { color: #6C7BF5; font-weight: 700; }
 
-/* 看板 */
-.board { white-space: nowrap; padding: 8rpx 0 10rpx; }
-.board-col { display: inline-block; vertical-align: top; width: 300rpx; margin-left: 20rpx;
-  padding: 16rpx 14rpx 20rpx; white-space: normal; }
+/* 看板（竖向） */
+.board-v { padding: 0 24rpx; display: flex; flex-direction: column; gap: 16rpx; margin-top: 10rpx; }
+.board-sec { padding: 20rpx 22rpx 12rpx; }
 .board-head { display: flex; justify-content: space-between; align-items: center;
-  font-size: 25rpx; font-weight: 700; padding: 6rpx 8rpx 14rpx; }
+  font-size: 26rpx; font-weight: 800; padding-bottom: 12rpx;
+  border-bottom: 1rpx dashed rgba(231, 227, 244, .9); }
 .board-count { font-size: 21rpx; color: #8A90A8; }
 .col-over .board-head { color: #E45858; }
 .col-open .board-head { color: #6C7BF5; }
 .col-done .board-head { color: #1FA97F; }
-.b-card { background: rgba(255, 253, 248, .85); border-radius: 20rpx; padding: 18rpx 16rpx; margin-bottom: 14rpx;
-  box-shadow: 0 6rpx 16rpx rgba(124, 139, 255, .08); }
-.b-card:active { opacity: .85; }
-.b-title { display: block; font-size: 25rpx; font-weight: 600; line-height: 1.5; }
-.b-meta { display: flex; align-items: center; gap: 10rpx; margin-top: 10rpx; flex-wrap: wrap; }
-.b-actions { display: flex; justify-content: flex-end; margin-top: 10rpx; }
-.b-btn { font-size: 22rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 999rpx; padding: 6rpx 20rpx; }
-.b-empty { text-align: center; font-size: 22rpx; color: #C3C7DA; padding: 26rpx 0; }
+.b-row { display: flex; align-items: flex-start; gap: 14rpx; padding: 16rpx 0;
+  border-bottom: 1rpx dashed rgba(231, 227, 244, .8); }
+.b-row:last-child { border-bottom: none; }
+.b-main { flex: 1; min-width: 0; }
+.b-title { font-size: 26rpx; font-weight: 600; color: #3A3F58; }
+.b-meta { display: flex; align-items: center; gap: 10rpx; margin-top: 8rpx; flex-wrap: wrap; }
+.b-done-btn { font-size: 22rpx; color: #6C7BF5; border: 2rpx solid #C9CFFF; border-radius: 999rpx;
+  padding: 6rpx 18rpx; flex-shrink: 0; }
+.b-empty { text-align: center; font-size: 22rpx; color: #C3C7DA; padding: 22rpx 0; }
 
 /* 便签日历条 */
 .week-bar { display: flex; align-items: center; margin: 18rpx 24rpx 0; padding: 16rpx 12rpx; }
@@ -624,8 +737,12 @@ onShow(load)
 
 .notes-head { display: flex; align-items: flex-end; justify-content: space-between;
   padding: 16rpx 30rpx 4rpx; }
+.notes-head-left { display: flex; flex-direction: column; }
 .notes-date { display: block; font-size: 30rpx; font-weight: 800; color: #4A4F6B; letter-spacing: 1rpx; }
 .notes-sub { display: block; font-size: 22rpx; color: #8A90A8; margin-top: 4rpx; }
+.notes-head-right { display: flex; align-items: flex-end; gap: 8rpx; }
+.pick-date { font-size: 21rpx; color: #6C7BF5; background: rgba(255,253,248,.75);
+  border: 1rpx solid rgba(255,255,255,.8); border-radius: 999rpx; padding: 8rpx 18rpx; }
 .week-rabbit { width: 104rpx; height: 108rpx; margin-bottom: -18rpx; }
 
 .note-list { padding: 4rpx 24rpx 0; }
@@ -639,7 +756,6 @@ onShow(load)
   white-space: pre-wrap; word-break: break-all; }
 .notes-empty { margin: 10rpx 24rpx; padding: 46rpx 20rpx; text-align: center;
   font-size: 24rpx; color: #A6AAC2; }
-.empty-animal { width: 150rpx; display: block; margin: 0 auto 12rpx; }
 .search-group { padding: 0 24rpx; }
 .search-date { font-size: 24rpx; font-weight: 700; color: #8A90A8; margin: 18rpx 6rpx 10rpx; }
 

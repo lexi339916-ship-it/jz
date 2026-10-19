@@ -98,6 +98,7 @@ class NoteIn(BaseModel):
     due_at: datetime | None = None
     priority: Literal["high", "medium", "low"] = "medium"
     pinned: bool = False
+    color: str = Field(default="lilac", max_length=20)
 
 
 class NoteOut(BaseModel):
@@ -110,6 +111,7 @@ class NoteOut(BaseModel):
     due_at: datetime | None
     priority: str
     pinned: bool
+    color: str
     is_overdue: bool
     created_at: datetime
     updated_at: datetime
