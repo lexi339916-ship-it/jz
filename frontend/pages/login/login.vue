@@ -40,17 +40,17 @@ function goRegister() {
     <view class="auth-hero">
       <view class="blob blob-a" />
       <view class="blob blob-b" />
-      <view class="doodle note-a">✎</view>
-      <view class="doodle note-b">¥</view>
-      <view class="doodle star">✦</view>
+      <image class="doodle doodle-coffee" src="/static/doodles/coffee.png" mode="widthFix" />
+      <image class="doodle doodle-stars" src="/static/doodles/stars.png" mode="widthFix" />
       <text class="brand">智能记账</text>
+      <image class="brand-underline" src="/static/doodles/underline.png" mode="widthFix" />
       <text class="slogan">记好每一笔 · 也安排好每一天</text>
       <text class="deco-dots">✧ ✦ ✧</text>
     </view>
 
     <!-- 登录卡片 -->
-    <view class="card form">
-      <view class="washi" />
+    <view class="card-sketch form">
+      <image class="form-tape" src="/static/doodles/tape_mint.png" mode="widthFix" />
       <text class="form-title">欢迎回来</text>
       <text class="form-sub">登录后继续记录你的生活</text>
       <view class="form-item">
@@ -68,6 +68,8 @@ function goRegister() {
         <text class="link" @click="goRegister">没有账号？去注册</text>
       </view>
     </view>
+
+    <image class="login-cat" src="/static/doodles/cat.png" mode="widthFix" />
   </view>
 </template>
 
@@ -81,18 +83,19 @@ function goRegister() {
   background: radial-gradient(circle at 30% 30%, #DDE3FF, #EFE9FF 70%); }
 .blob-b { width: 120rpx; height: 120rpx; right: 26rpx; top: 10rpx;
   background: radial-gradient(circle at 40% 40%, #FFF3D9, #FFEAC2 70%); opacity: .8; }
-.doodle { position: absolute; color: #8B7FE8; opacity: .8; }
-.note-a { left: 60rpx; top: 24rpx; font-size: 40rpx; transform: rotate(-12deg); }
-.note-b { right: 82rpx; top: 104rpx; font-size: 34rpx; transform: rotate(10deg); color: #F2B45C; }
-.star { right: 120rpx; top: 12rpx; font-size: 24rpx; color: #C7B7F7; }
+.doodle-coffee { left: 26rpx; top: 6rpx; width: 86rpx; transform: rotate(-6deg); }
+.doodle-stars { right: 20rpx; top: -2rpx; width: 104rpx; transform: rotate(5deg); }
 .brand { position: relative; display: block; font-size: 60rpx; font-weight: 800; color: #5A54B8;
   letter-spacing: 4rpx; text-shadow: 0 4rpx 0 rgba(255, 255, 255, .8); }
-.slogan { position: relative; display: block; margin-top: 14rpx; font-size: 26rpx; color: #8A90A8;
+.brand-underline { display: block; width: 244rpx; height: 28rpx; margin: -2rpx auto 0; opacity: .75; }
+.slogan { position: relative; display: block; margin-top: 10rpx; font-size: 26rpx; color: #8A90A8;
   letter-spacing: 2rpx; }
 .deco-dots { display: block; margin-top: 14rpx; font-size: 22rpx; color: #C7B7F7; letter-spacing: 10rpx; }
 
 /* 卡片 */
 .form { position: relative; margin: 30rpx 40rpx 0; padding: 46rpx 36rpx 36rpx; }
+.form-tape { position: absolute; top: -24rpx; left: 50%; width: 148rpx;
+  transform: translateX(-50%) rotate(-3deg); }
 .form-title { display: block; font-size: 36rpx; font-weight: 800; color: #3A3F58; letter-spacing: 1rpx; }
 .form-sub { display: block; font-size: 24rpx; color: #A6AAC2; margin: 10rpx 0 34rpx; }
 .form-item { margin-bottom: 28rpx; }
@@ -100,4 +103,5 @@ function goRegister() {
 .ph { color: #C3C7DA; }
 .links { margin-top: 26rpx; text-align: center; }
 .link { color: #6C7BF5; font-size: 25rpx; letter-spacing: 1rpx; }
+.login-cat { position: fixed; right: 14rpx; bottom: 10rpx; width: 122rpx; opacity: .92; }
 </style>

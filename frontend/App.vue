@@ -13,7 +13,11 @@ export default {
    ============================================================ */
 page {
   min-height: 100vh;
-  background: linear-gradient(178deg, #EAF0FF 0%, #F2EEFF 34%, #FDFBF6 72%, #FFFDF9 100%);
+  background-color: #F3F0FB;
+  background-image:
+    radial-gradient(rgba(150, 142, 200, 0.055) 1rpx, transparent 1.6rpx),
+    linear-gradient(178deg, #EAF0FF 0%, #F2EEFF 34%, #FDFBF6 72%, #FFFDF9 100%);
+  background-size: 24rpx 24rpx, 100% 100%;
   color: #3A3F58;
   font-size: 28rpx;
   font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
@@ -27,6 +31,23 @@ page {
   margin: 20rpx 24rpx;
   box-shadow: 0 12rpx 32rpx rgba(124, 139, 255, 0.10);
   border: 1rpx solid rgba(255, 255, 255, 0.95);
+}
+
+/* 手绘卡片：不规则圆角 + 墨线描边 + 贴纸式偏移阴影 */
+.card-sketch {
+  background: #FFFDF8;
+  padding: 30rpx;
+  margin: 20rpx 24rpx;
+  border: 3rpx solid #4E5170;
+  border-radius: 255rpx 22rpx 235rpx 18rpx / 18rpx 235rpx 20rpx 255rpx;
+  box-shadow: 6rpx 8rpx 0 rgba(120, 110, 180, 0.12);
+}
+
+/* 手绘贴纸（图片装饰定位助手） */
+.doodle {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* 手账胶带装饰（放在卡片内部顶部） */

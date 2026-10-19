@@ -105,7 +105,10 @@ onShow(() => {
 
 <template>
   <view class="page">
-    <text class="page-title">我的</text>
+    <view class="title-row">
+      <text class="page-title">我的</text>
+      <image class="profile-sun" src="/static/doodles/sun.png" mode="widthFix" />
+    </view>
 
     <!-- 用户卡 -->
     <view class="user-card">
@@ -245,6 +248,9 @@ onShow(() => {
 
 <style scoped>
 .page { padding: 24rpx 24rpx 60rpx; }
+.title-row { display: flex; justify-content: space-between; align-items: center; padding-right: 16rpx; }
+.title-row .page-title { margin-bottom: 14rpx; }
+.profile-sun { width: 88rpx; height: 88rpx; opacity: .9; transform: rotate(8deg); margin-top: -4rpx; }
 .page-title { display: block; font-size: 48rpx; font-weight: 800; margin: 10rpx 8rpx 26rpx; }
 
 /* 用户卡 */

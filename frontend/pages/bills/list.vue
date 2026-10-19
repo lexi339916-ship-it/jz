@@ -231,7 +231,10 @@ onShow(() => {
         {{ loading ? '加载中…' : '加载更多' }}
       </view>
     </view>
-    <view v-else-if="viewMode === 'list'" class="empty">该条件下暂无账单</view>
+    <view v-else-if="viewMode === 'list'" class="empty">
+      <image class="empty-doodle" src="/static/doodles/cloud.png" mode="widthFix" />
+      <text>该条件下暂无账单</text>
+    </view>
 
     <!-- ===== 日历视图 ===== -->
     <block v-else>
@@ -342,6 +345,7 @@ onShow(() => {
 .amount { font-size: 32rpx; font-weight: 700; }
 .amount-in { color: #45C39A; } .amount-out { color: #3A3F58; }
 .load-more { text-align: center; color: #8A90A8; font-size: 24rpx; padding: 24rpx; }
+.empty-doodle { width: 160rpx; display: block; margin: 0 auto 14rpx; opacity: .9; }
 
 /* ===== 日历 ===== */
 .cal-card { padding: 24rpx 18rpx 18rpx; }

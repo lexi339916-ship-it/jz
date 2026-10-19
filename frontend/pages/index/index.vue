@@ -37,7 +37,7 @@ const greeting = computed(() => {
 })
 
 const netColor = computed(() =>
-  (Number(stats.value.net) >= 0 ? '#CFF7E9' : '#FFDCE1'))
+  (Number(stats.value.net) >= 0 ? '#2E9E7E' : '#D96363'))
 
 function currentMonth() {
   const d = new Date()
@@ -124,16 +124,21 @@ onPullDownRefresh(() => {
     <!-- 手账页眉 -->
     <view class="header">
       <view class="header-top">
-        <text class="date-text">{{ todayText }}</text>
-        <text class="header-deco">✦ ✧</text>
+        <view class="header-left">
+          <text class="date-text">{{ todayText }}</text>
+          <text class="header-deco">✧ ✦</text>
+        </view>
+        <image class="header-cat" src="/static/doodles/cat.png" mode="widthFix" />
       </view>
       <text class="page-title">你好，{{ nickname }}</text>
+      <image class="title-underline" src="/static/doodles/underline.png" mode="widthFix" />
       <text class="greeting">{{ greeting }}</text>
     </view>
 
     <!-- 月度结余手账卡 -->
     <view class="hero">
       <view class="washi" />
+      <image class="hero-stars" src="/static/doodles/stars.png" mode="widthFix" />
       <view class="month-nav">
         <text class="arrow" @click="prevMonth">‹</text>
         <text class="month">{{ month.slice(0, 4) }}年{{ Number(month.slice(5)) }}月</text>
@@ -167,7 +172,9 @@ onPullDownRefresh(() => {
     </view>
 
     <!-- AI 洞察卡 -->
-    <view class="card insight-card">
+    <view class="insight-card card-sketch">
+      <image class="insight-tape" src="/static/doodles/tape_lilac.png" mode="widthFix" />
+      <image class="insight-coffee" src="/static/doodles/coffee.png" mode="widthFix" />
       <view class="insight-head">
         <view class="insight-badge">✦ AI 小助手</view>
         <text class="insight-refresh" @click="loadInsight(true)">刷新</text>
@@ -216,7 +223,10 @@ onPullDownRefresh(() => {
     <!-- 最近账单 -->
     <view class="card">
       <view class="section-title">
-        最近账单
+        <view class="title-line">
+          <image class="title-doodle" src="/static/doodles/flower.png" mode="widthFix" />
+          <text>最近账单</text>
+        </view>
         <text class="section-more" @click="uni.switchTab({ url: '/pages/bills/list' })">全部 ›</text>
       </view>
       <view v-if="recentBills.length === 0" class="empty">本月还没有账单，记一笔吧</view>
@@ -238,7 +248,10 @@ onPullDownRefresh(() => {
     <!-- 待办摘要 -->
     <view class="card">
       <view class="section-title">
-        待办事项（{{ pendingCount }}）
+        <view class="title-line">
+          <image class="title-doodle" src="/static/doodles/heart.png" mode="widthFix" />
+          <text>待办事项（{{ pendingCount }}）</text>
+        </view>
         <text class="section-more" @click="uni.switchTab({ url: '/pages/notes/list' })">全部 ›</text>
       </view>
       <view v-if="todayDueCount > 0" class="overdue-tip" @click="uni.switchTab({ url: '/pages/notes/list' })">
@@ -258,39 +271,50 @@ onPullDownRefresh(() => {
 .page { padding-bottom: 40rpx; }
 
 /* 页眉 */
-.header { padding: 28rpx 32rpx 6rpx; }
-.header-top { display: flex; justify-content: space-between; align-items: center; }
+.header { position: relative; padding: 28rpx 32rpx 6rpx; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.header-left { display: flex; flex-direction: column; gap: 6rpx; padding-top: 12rpx; }
 .date-text { font-size: 24rpx; color: #8A90A8; letter-spacing: 1rpx; }
-.header-deco { font-size: 26rpx; color: #C7B7F7; letter-spacing: 6rpx; }
-.header .page-title { margin: 12rpx 0 6rpx; }
+.header-deco { font-size: 24rpx; color: #C7B7F7; letter-spacing: 8rpx; }
+.header-cat { width: 136rpx; height: 110rpx; margin-top: -12rpx; }
+.header .page-title { margin: 10rpx 0 2rpx; }
+.title-underline { display: block; width: 224rpx; height: 26rpx; margin: 0 0 8rpx 4rpx; opacity: .75; }
 .greeting { display: block; font-size: 25rpx; color: #8A90A8; letter-spacing: 1rpx; }
 
-/* 结余手账卡 */
+/* 结余手账卡（水彩质感 + 手绘边框） */
 .hero { position: relative; margin: 22rpx 24rpx 0; padding: 34rpx 30rpx 26rpx;
-  border-radius: 38rpx; overflow: hidden;
-  background: linear-gradient(155deg, #8B97FF 0%, #A9A2FF 55%, #C9B8FF 100%);
-  color: #fff; box-shadow: 0 16rpx 38rpx rgba(124, 139, 255, .30); }
+  border-radius: 260rpx 26rpx 240rpx 22rpx / 22rpx 240rpx 26rpx 260rpx;
+  overflow: hidden; color: #5A5F78;
+  border: 3rpx solid #4E5170;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(206, 217, 255, .95) 0%, rgba(206, 217, 255, 0) 55%),
+    radial-gradient(circle at 85% 22%, rgba(236, 223, 255, .95) 0%, rgba(236, 223, 255, 0) 60%),
+    linear-gradient(160deg, #F5F2FF 0%, #E9E5F8 100%);
+  box-shadow: 8rpx 10rpx 0 rgba(120, 110, 180, .12); }
+.hero-stars { position: absolute; right: 18rpx; top: 8rpx; width: 116rpx; opacity: .92;
+  transform: rotate(4deg); }
 .month-nav { display: flex; align-items: center; justify-content: center; gap: 30rpx; }
-.arrow { font-size: 42rpx; opacity: .9; padding: 0 18rpx; }
-.month { font-size: 27rpx; font-weight: 600; opacity: .95; letter-spacing: 1rpx; }
-.net-label { display: block; text-align: center; font-size: 24rpx; opacity: .8; margin-top: 24rpx; }
+.arrow { font-size: 42rpx; color: #6B7089; padding: 0 18rpx; }
+.month { font-size: 27rpx; font-weight: 700; color: #5A5F78; letter-spacing: 1rpx; }
+.net-label { display: block; text-align: center; font-size: 24rpx; color: #8A90A8; margin-top: 24rpx; }
 .net-num { display: block; text-align: center; font-size: 74rpx; font-weight: 800;
   letter-spacing: 1rpx; margin: 8rpx 0 14rpx; }
 .io-row { display: flex; justify-content: center; gap: 18rpx; }
-.io-chip { font-size: 23rpx; background: rgba(255, 255, 255, .18);
-  border-radius: 999rpx; padding: 8rpx 22rpx; }
+.io-chip { font-size: 23rpx; color: #5A5F78; background: rgba(255, 255, 255, .55);
+  border: 1rpx solid rgba(255, 255, 255, .9); border-radius: 999rpx; padding: 8rpx 22rpx; }
 .trend { display: flex; align-items: flex-end; gap: 10rpx; height: 104rpx;
-  margin-top: 26rpx; padding-top: 6rpx; border-top: 1rpx solid rgba(255,255,255,.22); }
+  margin-top: 26rpx; padding-top: 6rpx; border-top: 1rpx dashed #D8D3EC; }
 .trend-col { flex: 1; height: 100%; display: flex; flex-direction: column;
   align-items: center; justify-content: flex-end; }
-.trend-bar { width: 62%; border-radius: 8rpx 8rpx 3rpx 3rpx; background: rgba(255,255,255,.30); }
-.trend-has { background: rgba(255,255,255,.88); }
-.trend-label { font-size: 17rpx; opacity: .75; margin-top: 8rpx; }
+.trend-bar { width: 62%; border-radius: 8rpx 8rpx 3rpx 3rpx; background: #D7DBF2; }
+.trend-has { background: #A9B4F5; }
+.trend-label { font-size: 17rpx; color: #8A90A8; margin-top: 8rpx; }
 
 /* 截图记账入口 */
 .shoot-card { display: flex; align-items: center; margin: 20rpx 24rpx 0; padding: 26rpx 26rpx;
-  background: #FFFDF8; border: 2rpx dashed #BFB4F2; border-radius: 32rpx;
-  box-shadow: 0 10rpx 26rpx rgba(124, 139, 255, .10); }
+  background: #FFFDF8; border: 3rpx dashed #8B7FE8;
+  border-radius: 255rpx 22rpx 235rpx 18rpx / 18rpx 235rpx 20rpx 255rpx;
+  box-shadow: 6rpx 8rpx 0 rgba(120, 110, 180, .10); }
 .shoot-card:active { opacity: .88; }
 .shoot-icon { width: 92rpx; height: 92rpx; border-radius: 28rpx; flex-shrink: 0;
   background: #F4F0FF; display: flex; align-items: center; justify-content: center; font-size: 42rpx; }
@@ -300,11 +324,15 @@ onPullDownRefresh(() => {
 .shoot-arrow { font-size: 36rpx; color: #C3C7DA; padding-left: 10rpx; }
 
 /* AI 洞察 */
-.insight-card { background: linear-gradient(180deg, #F8F6FF 0%, #FFFDF8 70%); }
+.insight-card { position: relative; background: linear-gradient(180deg, #FBFAFF 0%, #FFFDF8 70%); }
+.insight-tape { position: absolute; top: -20rpx; left: 34rpx; width: 132rpx; transform: rotate(-5deg); }
+.insight-coffee { position: absolute; right: 16rpx; bottom: 6rpx; width: 82rpx; opacity: .85;
+  transform: rotate(3deg); }
 .insight-head { display: flex; justify-content: space-between; align-items: center; }
 .insight-badge { font-size: 24rpx; font-weight: 800; color: #7C6FE0; letter-spacing: 1rpx; }
 .insight-refresh { font-size: 22rpx; color: #A6AAC2; padding: 4rpx 12rpx; }
-.insight-text { display: block; font-size: 26rpx; line-height: 1.75; color: #4A4F6B; margin-top: 14rpx; }
+.insight-text { display: block; font-size: 26rpx; line-height: 1.75; color: #4A4F6B;
+  margin-top: 14rpx; padding-right: 88rpx; }
 .insight-notice { display: block; font-size: 20rpx; color: #A6AAC2; margin-top: 8rpx; }
 .insight-loading { display: flex; gap: 10rpx; padding: 18rpx 0 6rpx; }
 .dot { width: 14rpx; height: 14rpx; border-radius: 7rpx; background: #BFB4F2;
@@ -353,4 +381,8 @@ onPullDownRefresh(() => {
 .todo-dot { width: 16rpx; height: 16rpx; border-radius: 8rpx; background: #F2B45C; flex-shrink: 0; }
 .todo-title { flex: 1; font-size: 26rpx; }
 .todo-due { font-size: 22rpx; color: #A6AAC2; }
+
+/* 手绘标题装饰 */
+.title-line { display: flex; align-items: center; gap: 10rpx; }
+.title-doodle { width: 30rpx; height: 32rpx; opacity: .9; }
 </style>

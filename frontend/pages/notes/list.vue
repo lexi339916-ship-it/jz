@@ -146,7 +146,10 @@ onShow(load)
         </text>
       </view>
     </view>
-    <view v-else-if="!loading" class="empty">{{ emptyText }}</view>
+    <view v-else-if="!loading" class="empty">
+      <image class="empty-doodle" src="/static/doodles/sticky.png" mode="widthFix" />
+      <text>{{ emptyText }}</text>
+    </view>
 
     <view class="fab" @click="goEdit()">＋</view>
   </view>
@@ -165,6 +168,7 @@ onShow(load)
 .tab-active { color: #fff; background: #6C7BF5; font-weight: 600; }
 .pending-line { text-align: center; font-size: 22rpx; color: #A6AAC2; padding: 10rpx 0 4rpx; }
 .pending-num { color: #6C7BF5; font-weight: 700; }
+.empty-doodle { width: 150rpx; display: block; margin: 0 auto 14rpx; opacity: .9; }
 
 .list { margin-top: 16rpx; }
 .task-card { display: flex; align-items: flex-start; background: #FFFDF8; margin: 14rpx 24rpx;
