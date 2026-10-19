@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { apiLogin } from '../../api/index.js'
-import { setLogin, isLogged } from '../../store/user.js'
+import { apiLogin, apiMe } from '../../api/index.js'
+import { setLogin, isLogged, clearLogin } from '../../store/user.js'
 import { BASE_URL } from '../../common/config.js'
 
 const username = ref('')
@@ -22,10 +22,17 @@ function saveApiBase() {
   uni.showToast({ title: '服务器地址已保存', icon: 'success' })
 }
 
-// 已登录直接进入首页
-if (isLogged()) {
-  uni.switchTab({ url: '/pages/index/index' })
+// 启动时校验登录态：有效直接进首页；过期时由请求层自动刷新，失败则留在登录页
+async function checkLogin() {
+  if (!isLogged()) return
+  try {
+    await apiMe()
+    uni.switchTab({ url: '/pages/index/index' })
+  } catch (e) {
+    clearLogin()
+  }
 }
+checkLogin()
 
 async function onLogin() {
   if (!username.value || !password.value) {
@@ -35,7 +42,7 @@ async function onLogin() {
   loading.value = true
   try {
     const res = await apiLogin({ username: username.value, password: password.value })
-    setLogin(res.access_token, res.user)
+    setLogin(res.access_token, res.refresh_token, res.user)
     uni.switchTab({ url: '/pages/index/index' })
   } catch (e) {
     // 错误提示已由 request.js 统一处理

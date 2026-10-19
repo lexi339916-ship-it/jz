@@ -5,8 +5,13 @@ from sqlalchemy.orm import Session
 
 from app.deps import get_current_user, get_db
 from app.models import User
-from app.schemas import LoginIn, ProfileUpdateIn, RegisterIn, TokenOut, UserOut
-from app.security import create_token, hash_password, verify_password
+from app.schemas import (
+    LoginIn, ProfileUpdateIn, RefreshIn, RegisterIn, TokenOut, UserOut,
+)
+from app.security import (
+    create_refresh_token, create_token, decode_refresh_token,
+    hash_password, verify_password,
+)
 
 router = APIRouter()
 
@@ -24,7 +29,10 @@ def register(data: RegisterIn, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
-    return TokenOut(access_token=create_token(user.id), user=UserOut.model_validate(user))
+    return TokenOut(
+        access_token=create_token(user.id),
+        refresh_token=create_refresh_token(user.id),
+        user=UserOut.model_validate(user))
 
 
 @router.post("/login", response_model=TokenOut)
@@ -32,7 +40,25 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.username == data.username))
     if user is None or not verify_password(data.password, user.password_hash):
         raise HTTPException(400, "用户名或密码不正确")
-    return TokenOut(access_token=create_token(user.id), user=UserOut.model_validate(user))
+    return TokenOut(
+        access_token=create_token(user.id),
+        refresh_token=create_refresh_token(user.id),
+        user=UserOut.model_validate(user))
+
+
+@router.post("/refresh", response_model=TokenOut)
+def refresh(data: RefreshIn, db: Session = Depends(get_db)):
+    """用刷新令牌换取新的访问令牌（刷新令牌轮换）。"""
+    user_id = decode_refresh_token(data.refresh_token)
+    if user_id is None:
+        raise HTTPException(401, "刷新令牌无效或已过期，请重新登录")
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(401, "用户不存在，请重新登录")
+    return TokenOut(
+        access_token=create_token(user.id),
+        refresh_token=create_refresh_token(user.id),
+        user=UserOut.model_validate(user))
 
 
 @router.get("/me", response_model=UserOut)

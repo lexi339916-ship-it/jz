@@ -23,6 +23,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./smart_life.db")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-only-secret-change-me")
 JWT_ALGORITHM = "HS256"
 TOKEN_EXPIRE_DAYS = _int_env("TOKEN_EXPIRE_DAYS", 7)
+# 刷新令牌有效期（天），用于无感续期；可在 .env 覆盖
+REFRESH_TOKEN_EXPIRE_DAYS = _int_env("REFRESH_TOKEN_EXPIRE_DAYS", 30)
 
 # 大模型服务配置（OpenAI 兼容 chat/completions 接口）
 AI_BASE_URL = os.getenv("AI_BASE_URL", "").rstrip("/")

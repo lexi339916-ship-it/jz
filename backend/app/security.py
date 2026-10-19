@@ -43,6 +43,27 @@ def create_token(user_id: int) -> str:
     return jwt.encode(payload, config.JWT_SECRET, algorithm=config.JWT_ALGORITHM)
 
 
+def create_refresh_token(user_id: int) -> str:
+    payload = {
+        "sub": str(user_id),
+        "type": "refresh",
+        "exp": datetime.now(timezone.utc) + timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS),
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(payload, config.JWT_SECRET, algorithm=config.JWT_ALGORITHM)
+
+
+def decode_refresh_token(token: str) -> int | None:
+    """校验刷新令牌并返回用户 id；类型不匹配或过期返回 None。"""
+    try:
+        payload = jwt.decode(token, config.JWT_SECRET, algorithms=[config.JWT_ALGORITHM])
+        if payload.get("type") != "refresh":
+            return None
+        return int(payload["sub"])
+    except (jwt.PyJWTError, KeyError, ValueError):
+        return None
+
+
 def decode_token(token: str) -> int | None:
     """校验令牌并返回用户 id；无效或过期返回 None。"""
     try:
