@@ -14,12 +14,12 @@ const dueDate = ref('')
 const dueTime = ref('09:00')
 const saving = ref(false)
 const TASK_COLORS = [
-  { key: 'lilac', color: '#A78BFA' },
-  { key: 'sky', color: '#6C9FF0' },
-  { key: 'mint', color: '#4FC9A4' },
-  { key: 'peach', color: '#F29A7F' },
-  { key: 'sand', color: '#E8B44F' },
-  { key: 'rose', color: '#E8849F' },
+  { key: 'lilac', color: '#EFDFE9' },
+  { key: 'sky', color: '#D2EFF1' },
+  { key: 'mint', color: '#DEF6D6' },
+  { key: 'peach', color: '#BDE4DD' },
+  { key: 'sand', color: '#FFE8C9' },
+  { key: 'rose', color: '#FED2DF' },
 ]
 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
   .toISOString().slice(0, 10)

@@ -31,8 +31,8 @@ const noteItems = ref([])
 
 // 任务颜色（与编辑页一致）
 const TASK_COLORS = {
-  lilac: '#A78BFA', sky: '#6C9FF0', mint: '#4FC9A4',
-  peach: '#F29A7F', sand: '#E8B44F', rose: '#E8849F',
+  lilac: '#EFDFE9', sky: '#D2EFF1', mint: '#DEF6D6',
+  peach: '#BDE4DD', sand: '#FFE8C9', rose: '#FED2DF',
 }
 function taskColor(c) { return TASK_COLORS[c] || TASK_COLORS.lilac }
 
