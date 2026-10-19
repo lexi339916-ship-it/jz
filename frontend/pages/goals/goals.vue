@@ -129,7 +129,7 @@ onShow(load)
   <view class="page">
     <!-- 储蓄目标 -->
     <view class="section-head">
-      <text class="section-title">🎯 储蓄目标</text>
+      <view class="section-title"><image class="sec-icon" src="/static/icons/act_target.png" mode="widthFix" /><text>储蓄目标</text></view>
       <text class="add-btn" @click="goalFormOpen = !goalFormOpen">＋ 新建目标</text>
     </view>
     <view v-if="goalFormOpen" class="card form-card">
@@ -169,7 +169,7 @@ onShow(load)
 
     <!-- 生活挑战 -->
     <view class="section-head">
-      <text class="section-title">🔥 生活挑战</text>
+      <view class="section-title"><image class="sec-icon" src="/static/icons/act_sparkle.png" mode="widthFix" /><text>生活挑战</text></view>
       <text class="add-btn" @click="challengeFormOpen = !challengeFormOpen">＋ 新建挑战</text>
     </view>
     <view v-if="challengeFormOpen" class="card form-card">
@@ -226,7 +226,8 @@ onShow(load)
 <style scoped>
 .page { padding: 24rpx 24rpx 60rpx; }
 .section-head { display: flex; justify-content: space-between; align-items: center; margin: 26rpx 8rpx 14rpx; }
-.section-title { font-size: 30rpx; font-weight: 700; }
+.section-title { font-size: 30rpx; font-weight: 700; display: flex; align-items: center; gap: 10rpx; }
+.sec-icon { width: 40rpx; height: 40rpx; }
 .add-btn { font-size: 24rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 26rpx; padding: 8rpx 20rpx; }
 .form-card { margin: 0 0 16rpx; }
 .form-input { margin-bottom: 18rpx; }

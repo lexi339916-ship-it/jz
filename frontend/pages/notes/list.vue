@@ -126,14 +126,16 @@ onShow(load)
           :class="n.status === 'done' && 'check-done'" @click.stop="toggleDone(n)">
           {{ n.status === 'done' ? '✓' : '' }}
         </view>
-        <view v-else class="note-mark">📄</view>
+        <view v-else class="note-mark">
+          <image class="note-mark-img" src="/static/icons/act_note.png" mode="widthFix" />
+        </view>
         <view class="task-main">
           <view class="title-row">
             <text class="task-title" :class="{ 'done-title': n.status === 'done' }">{{ n.title }}</text>
             <text v-if="PRIORITY_META[n.priority]" class="pri-tag" :class="PRIORITY_META[n.priority].cls">
               {{ PRIORITY_META[n.priority].label }}
             </text>
-            <text v-if="n.pinned" class="pin-mark">📌</text>
+            <image v-if="n.pinned" class="pin-mark" src="/static/icons/act_pin.png" mode="widthFix" />
           </view>
           <text class="task-content" v-if="n.content">{{ n.content }}</text>
           <view class="meta-row">
@@ -180,7 +182,8 @@ onShow(load)
   display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26rpx; }
 .check-done { background: #45C39A; border-color: #45C39A; }
 .note-mark { width: 44rpx; margin-right: 18rpx; margin-top: 2rpx; flex-shrink: 0;
-  font-size: 30rpx; text-align: center; }
+  display: flex; align-items: center; justify-content: center; }
+.note-mark-img { width: 40rpx; height: 40rpx; }
 .task-main { flex: 1; min-width: 0; }
 .title-row { display: flex; align-items: center; gap: 12rpx; flex-wrap: wrap; }
 .task-title { font-size: 29rpx; font-weight: 600; }
@@ -188,7 +191,7 @@ onShow(load)
 .pri-tag { font-size: 20rpx; border-radius: 8rpx; padding: 2rpx 12rpx; font-weight: 700; }
 .pri-high { background: #FFEDEE; color: #F27E7E; }
 .pri-low { background: #F4F2FA; color: #8b93a5; }
-.pin-mark { font-size: 22rpx; }
+.pin-mark { width: 30rpx; height: 30rpx; }
 .task-content { display: block; font-size: 24rpx; color: #8A90A8; margin-top: 10rpx;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meta-row { display: flex; align-items: center; margin-top: 12rpx; }

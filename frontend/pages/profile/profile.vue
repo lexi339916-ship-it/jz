@@ -150,7 +150,7 @@ onShow(() => {
     <text class="group-title">账号与安全</text>
     <view class="group-card">
       <view class="menu-item" @click="pwdOpen = !pwdOpen">
-        <view class="menu-icon" style="background: #EFF1FF">🔐</view>
+        <view class="menu-icon" style="background: #EFF1FF"><image class="menu-img" src="/static/icons/act_lock.png" mode="widthFix" /></view>
         <view class="menu-main">
           <text class="menu-title">账号与安全</text>
           <text class="menu-sub">@{{ store.user?.username }} · 修改登录密码</text>
@@ -172,7 +172,7 @@ onShow(() => {
     <text class="group-title">常用功能</text>
     <view class="group-card">
       <view class="menu-item" @click="goBills">
-        <view class="menu-icon" style="background: #E9F8F2">📊</view>
+        <view class="menu-icon" style="background: #E9F8F2"><image class="menu-img" src="/static/icons/act_chart.png" mode="widthFix" /></view>
         <view class="menu-main">
           <text class="menu-title">我的明细</text>
           <text class="menu-sub">查看和管理你的收支记录</text>
@@ -180,7 +180,7 @@ onShow(() => {
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" @click="budgetOpen = !budgetOpen">
-        <view class="menu-icon" style="background: #FFF6E7">💰</view>
+        <view class="menu-icon" style="background: #FFF6E7"><image class="menu-img" src="/static/icons/act_wallet.png" mode="widthFix" /></view>
         <view class="menu-main">
           <text class="menu-title">月度预算</text>
           <text class="menu-sub">
@@ -203,7 +203,7 @@ onShow(() => {
         </view>
       </view>
       <view class="menu-item" @click="uni.navigateTo({ url: '/pages/goals/goals' })">
-        <view class="menu-icon" style="background: #FFEDEE">🎯</view>
+        <view class="menu-icon" style="background: #FFEDEE"><image class="menu-img" src="/static/icons/act_target.png" mode="widthFix" /></view>
         <view class="menu-main">
           <text class="menu-title">储蓄目标与挑战</text>
           <text class="menu-sub">攒钱目标 · 生活挑战 · 进度追踪</text>
@@ -211,7 +211,7 @@ onShow(() => {
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" @click="goAi">
-        <view class="menu-icon" style="background: #F4F0FF">✨</view>
+        <view class="menu-icon" style="background: #F4F0FF"><image class="menu-img" src="/static/icons/act_sparkle.png" mode="widthFix" /></view>
         <view class="menu-main">
           <text class="menu-title">AI 助手</text>
           <text class="menu-sub">一句话记账 · 任务提取 · 问账本</text>
@@ -224,7 +224,7 @@ onShow(() => {
     <text class="group-title">关于我们</text>
     <view class="group-card">
       <view class="menu-item" @click="aboutOpen = !aboutOpen">
-        <view class="menu-icon" style="background: #F6F4FB">ℹ️</view>
+        <view class="menu-icon" style="background: #F6F4FB"><image class="menu-img" src="/static/icons/act_info.png" mode="widthFix" /></view>
         <view class="menu-main">
           <text class="menu-title">关于系统</text>
           <text class="menu-sub">智能记账与生活便签一体化管理系统 v1.0</text>
@@ -289,7 +289,8 @@ onShow(() => {
 .menu-item:last-child { border-bottom: none; }
 .menu-item:active { background: #FBFAFE; }
 .menu-icon { width: 76rpx; height: 76rpx; border-radius: 26rpx; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 36rpx; margin-right: 22rpx; }
+  display: flex; align-items: center; justify-content: center; margin-right: 22rpx; }
+.menu-img { width: 52rpx; height: 52rpx; }
 .menu-main { flex: 1; min-width: 0; }
 .menu-title { display: block; font-size: 29rpx; font-weight: 600; }
 .menu-sub { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 8rpx; }

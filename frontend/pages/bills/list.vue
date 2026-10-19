@@ -206,7 +206,7 @@ onShow(() => {
     <view class="list" v-if="viewMode === 'list' && items.length">
       <view class="bill-card" v-for="b in items" :key="b.id" @click="goEdit(b.id)">
         <view class="cat-icon" :style="{ background: categoryMeta(b.category).color + '22' }">
-          {{ categoryMeta(b.category).icon }}
+          <image class="cat-img" :src="categoryMeta(b.category).img" mode="widthFix" />
         </view>
         <view class="mid">
           <view class="mid-top">
@@ -274,7 +274,7 @@ onShow(() => {
         <view v-if="dayBills.length">
           <view class="bill-card day-bill" v-for="b in dayBills" :key="b.id" @click="goEdit(b.id)">
             <view class="cat-icon sm" :style="{ background: categoryMeta(b.category).color + '22' }">
-              {{ categoryMeta(b.category).icon }}
+              <image class="cat-img" :src="categoryMeta(b.category).img" mode="widthFix" />
             </view>
             <view class="mid">
               <view class="mid-top">
@@ -328,9 +328,11 @@ onShow(() => {
 .bill-card { display: flex; align-items: center; background: #FFFDF8; margin: 14rpx 24rpx;
   border-radius: 22rpx; padding: 24rpx 24rpx; box-shadow: 0 6rpx 24rpx rgba(124, 139, 255, .10); }
 .bill-card:active { opacity: .85; }
-.cat-icon { width: 84rpx; height: 84rpx; border-radius: 28rpx; font-size: 40rpx;
+.cat-icon { width: 84rpx; height: 84rpx; border-radius: 28rpx;
   display: flex; align-items: center; justify-content: center; margin-right: 22rpx; flex-shrink: 0; }
-.cat-icon.sm { width: 68rpx; height: 68rpx; font-size: 32rpx; border-radius: 22rpx; }
+.cat-img { width: 58rpx; height: 58rpx; }
+.cat-icon.sm { width: 68rpx; height: 68rpx; border-radius: 22rpx; }
+.cat-icon.sm .cat-img { width: 46rpx; height: 46rpx; }
 .mid { flex: 1; min-width: 0; }
 .mid-top { display: flex; justify-content: space-between; align-items: center; }
 .mid-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10rpx; }
@@ -342,8 +344,8 @@ onShow(() => {
 .channel-tag { font-size: 20rpx; padding: 2rpx 12rpx; border-radius: 8rpx; font-weight: 600; }
 .ai-tag { margin-left: 10rpx; background: #EFF1FF; color: #6C7BF5; border-radius: 8rpx;
   padding: 2rpx 10rpx; font-size: 20rpx; font-weight: 600; }
-.amount { font-size: 32rpx; font-weight: 700; }
-.amount-in { color: #45C39A; } .amount-out { color: #3A3F58; }
+.amount { font-size: 32rpx; font-weight: 800; }
+.amount-in { color: #1FA97F; } .amount-out { color: #E45858; }
 .load-more { text-align: center; color: #8A90A8; font-size: 24rpx; padding: 24rpx; }
 .empty-doodle { width: 160rpx; display: block; margin: 0 auto 14rpx; opacity: .9; }
 
@@ -365,8 +367,8 @@ onShow(() => {
 .cal-today { background: #6C7BF5; color: #fff; }
 .cal-amount { font-size: 18rpx; line-height: 26rpx; max-width: 100%;
   overflow: hidden; white-space: nowrap; }
-.cal-amount.out { color: #E86A72; }
-.cal-amount.in { color: #33B98E; }
+.cal-amount.out { color: #E45858; font-weight: 700; }
+.cal-amount.in { color: #1FA97F; font-weight: 700; }
 
 /* ===== 当日明细 ===== */
 .day-panel { padding: 24rpx; }

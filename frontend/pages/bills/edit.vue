@@ -131,7 +131,7 @@ onLoad(async (options) => {
         <view v-for="c in typeCategories" :key="c.id"
           :class="['cat-item', category === c.name && 'cat-selected']"
           @click="pickCategory(c.name)">
-          <text class="cat-emoji">{{ categoryMeta(c.name).icon }}</text>
+          <image class="cat-emoji-img" :src="categoryMeta(c.name).img" mode="widthFix" />
           <text>{{ c.name }}</text>
         </view>
       </view>
@@ -188,7 +188,7 @@ onLoad(async (options) => {
 .cat-grid { display: flex; flex-wrap: wrap; gap: 16rpx; }
 .cat-item { display: flex; align-items: center; gap: 8rpx; padding: 14rpx 26rpx;
   background: #F6F4FB; border-radius: 22rpx; font-size: 26rpx; color: #5A5F78; }
-.cat-emoji { font-size: 30rpx; }
+.cat-emoji-img { width: 44rpx; height: 44rpx; }
 .cat-selected { background: #6C7BF5; color: #fff; font-weight: 700; }
 .channel-account { margin-top: 16rpx; }
 .picker-value { height: 88rpx; background: #F6F4FB; border-radius: 20rpx;

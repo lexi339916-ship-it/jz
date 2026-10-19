@@ -160,7 +160,7 @@ onShow(() => {
         <view class="cat-row" v-for="c in catStats" :key="c.category">
           <view class="cat-line">
             <view class="cat-left">
-              <text class="cat-emoji">{{ categoryMeta(c.category).icon }}</text>
+              <image class="cat-emoji-img" :src="categoryMeta(c.category).img" mode="widthFix" />
               <text class="cat-name">{{ c.category }}</text>
               <text class="cat-pct">{{ Math.round(c.ratio * 100) }}%</text>
             </view>
@@ -216,10 +216,10 @@ onShow(() => {
 
 .sum-grid { display: flex; gap: 18rpx; margin: 16rpx 24rpx 0; }
 .sum-card { flex: 1; border-radius: 24rpx; padding: 28rpx 0; text-align: center; color: #fff; }
-.c-green { background: linear-gradient(135deg, #7FDFC0, #5ED3B0); }
-.c-blue { background: linear-gradient(135deg, #A8B2FF, #7C8BFF); }
-.c-orange { background: linear-gradient(135deg, #FFD98E, #F7C36B); }
-.sum-num { display: block; font-size: 30rpx; font-weight: 700; }
+.c-green { background: linear-gradient(135deg, #6BD3B2, #3FB894); }
+.c-blue { background: linear-gradient(135deg, #8B97FF, #6C7BF5); }
+.c-orange { background: linear-gradient(135deg, #FFC96B, #F2A93B); }
+.sum-num { display: block; font-size: 32rpx; font-weight: 800; }
 .sum-label { display: block; font-size: 22rpx; opacity: .9; margin-top: 8rpx; }
 
 .row-between { display: flex; justify-content: space-between; align-items: center; }
@@ -242,7 +242,7 @@ onShow(() => {
 .cat-row { margin-top: 26rpx; }
 .cat-line { display: flex; justify-content: space-between; align-items: center; }
 .cat-left { display: flex; align-items: center; gap: 12rpx; }
-.cat-emoji { font-size: 32rpx; }
+.cat-emoji-img { width: 42rpx; height: 42rpx; }
 .cat-name { font-size: 26rpx; font-weight: 600; }
 .cat-pct { font-size: 22rpx; color: #8A90A8; background: #F6F4FB; border-radius: 10rpx;
   padding: 2rpx 12rpx; }

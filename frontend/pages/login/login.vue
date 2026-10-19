@@ -70,6 +70,7 @@ function goRegister() {
     </view>
 
     <image class="login-cat" src="/static/doodles/cat.png" mode="widthFix" />
+    <image class="login-flower" src="/static/doodles/flower.png" mode="widthFix" />
   </view>
 </template>
 
@@ -100,8 +101,12 @@ function goRegister() {
 .form-sub { display: block; font-size: 24rpx; color: #A6AAC2; margin: 10rpx 0 34rpx; }
 .form-item { margin-bottom: 28rpx; }
 .label { display: block; font-size: 25rpx; color: #5A5F78; margin-bottom: 12rpx; letter-spacing: 1rpx; }
+/* 手绘输入框：虚线描边 + 不规则圆角 */
+.input { border: 2rpx dashed #C9BFF0; background: #FFFDF8;
+  border-radius: 255rpx 20rpx 235rpx 18rpx / 18rpx 235rpx 20rpx 255rpx; }
 .ph { color: #C3C7DA; }
 .links { margin-top: 26rpx; text-align: center; }
 .link { color: #6C7BF5; font-size: 25rpx; letter-spacing: 1rpx; }
 .login-cat { position: fixed; right: 14rpx; bottom: 10rpx; width: 122rpx; opacity: .92; }
+.login-flower { position: fixed; left: 8rpx; bottom: 6rpx; width: 92rpx; opacity: .9; }
 </style>

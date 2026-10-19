@@ -37,7 +37,7 @@ const greeting = computed(() => {
 })
 
 const netColor = computed(() =>
-  (Number(stats.value.net) >= 0 ? '#2E9E7E' : '#D96363'))
+  (Number(stats.value.net) >= 0 ? '#1F9D74' : '#DE4F4F'))
 
 function currentMonth() {
   const d = new Date()
@@ -163,7 +163,9 @@ onPullDownRefresh(() => {
 
     <!-- 截图记账入口（突出） -->
     <view class="shoot-card" @click="uni.switchTab({ url: '/pages/ai/assistant' })">
-      <view class="shoot-icon">📷</view>
+      <view class="shoot-icon">
+        <image class="shoot-img" src="/static/icons/act_camera.png" mode="widthFix" />
+      </view>
       <view class="shoot-main">
         <text class="shoot-title">拍张截图，自动记账</text>
         <text class="shoot-sub">上传支付截图 / 小票 · AI 识别金额、商户与渠道</text>
@@ -207,16 +209,28 @@ onPullDownRefresh(() => {
     <!-- 快捷入口 -->
     <view class="quick">
       <view class="quick-item" @click="uni.navigateTo({ url: '/pages/bills/edit' })">
-        <text class="quick-icon q-blue">✏️</text><text>记一笔</text>
+        <view class="quick-icon q-blue">
+          <image class="quick-img" src="/static/icons/act_pencil.png" mode="widthFix" />
+        </view>
+        <text>记一笔</text>
       </view>
       <view class="quick-item" @click="uni.switchTab({ url: '/pages/ai/assistant' })">
-        <text class="quick-icon q-green">✨</text><text>AI 记账</text>
+        <view class="quick-icon q-green">
+          <image class="quick-img" src="/static/icons/act_sparkle.png" mode="widthFix" />
+        </view>
+        <text>AI 记账</text>
       </view>
       <view class="quick-item" @click="uni.navigateTo({ url: '/pages/notes/edit' })">
-        <text class="quick-icon q-orange">📝</text><text>写便签</text>
+        <view class="quick-icon q-orange">
+          <image class="quick-img" src="/static/icons/act_note.png" mode="widthFix" />
+        </view>
+        <text>写便签</text>
       </view>
       <view class="quick-item" @click="uni.navigateTo({ url: '/pages/statistics/statistics' })">
-        <text class="quick-icon q-purple">📊</text><text>看统计</text>
+        <view class="quick-icon q-purple">
+          <image class="quick-img" src="/static/icons/act_chart.png" mode="widthFix" />
+        </view>
+        <text>看统计</text>
       </view>
     </view>
 
@@ -233,7 +247,7 @@ onPullDownRefresh(() => {
       <view class="bill-row" v-for="b in recentBills" :key="b.id"
         @click="uni.navigateTo({ url: '/pages/bills/edit?id=' + b.id })">
         <view class="cat-icon" :style="{ background: categoryMeta(b.category).color + '22' }">
-          {{ categoryMeta(b.category).icon }}
+          <image class="cat-img" :src="categoryMeta(b.category).img" mode="widthFix" />
         </view>
         <view class="bill-left">
           <text class="bill-cat">{{ b.category }}</text>
@@ -317,7 +331,8 @@ onPullDownRefresh(() => {
   box-shadow: 6rpx 8rpx 0 rgba(120, 110, 180, .10); }
 .shoot-card:active { opacity: .88; }
 .shoot-icon { width: 92rpx; height: 92rpx; border-radius: 28rpx; flex-shrink: 0;
-  background: #F4F0FF; display: flex; align-items: center; justify-content: center; font-size: 42rpx; }
+  background: #F4F0FF; display: flex; align-items: center; justify-content: center; }
+.shoot-img { width: 60rpx; height: 60rpx; }
 .shoot-main { flex: 1; margin-left: 22rpx; min-width: 0; }
 .shoot-title { display: block; font-size: 29rpx; font-weight: 800; color: #4A4F6B; letter-spacing: 1rpx; }
 .shoot-sub { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 8rpx; }
@@ -356,21 +371,23 @@ onPullDownRefresh(() => {
   font-size: 23rpx; color: #5A5F78; box-shadow: 0 10rpx 26rpx rgba(124, 139, 255, .10); }
 .quick-item:active { opacity: .8; }
 .quick-icon { width: 78rpx; height: 78rpx; border-radius: 26rpx;
-  display: flex; align-items: center; justify-content: center; font-size: 36rpx; }
+  display: flex; align-items: center; justify-content: center; }
+.quick-img { width: 54rpx; height: 54rpx; }
 .q-blue { background: #EEF1FF; } .q-green { background: #E9F8F2; }
 .q-orange { background: #FFF6E7; } .q-purple { background: #F4F0FF; }
 
 /* 账单行 */
 .bill-row { display: flex; align-items: center; padding: 20rpx 0; border-bottom: 1rpx dashed #EFEDF7; }
 .bill-row:last-child { border-bottom: none; }
-.cat-icon { width: 76rpx; height: 76rpx; border-radius: 24rpx; font-size: 36rpx;
+.cat-icon { width: 76rpx; height: 76rpx; border-radius: 24rpx;
   display: flex; align-items: center; justify-content: center; margin-right: 22rpx; }
+.cat-img { width: 56rpx; height: 56rpx; }
 .bill-left { flex: 1; display: flex; flex-direction: column; gap: 6rpx; }
 .bill-cat { font-size: 28rpx; font-weight: 600; }
 .bill-remark { font-size: 22rpx; color: #A6AAC2; max-width: 380rpx; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
-.bill-amount { font-size: 30rpx; font-weight: 700; }
-.amount-in { color: #45C39A; } .amount-out { color: #3A3F58; }
+.bill-amount { font-size: 32rpx; font-weight: 800; }
+.amount-in { color: #1FA97F; } .amount-out { color: #E45858; }
 
 /* 待办 */
 .overdue-tip { margin: 4rpx 0 14rpx; background: #FFEDEE; color: #D96363; border-radius: 18rpx;

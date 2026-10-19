@@ -318,7 +318,8 @@ onShow(() => {
       <!-- 截图记账 -->
       <view class="upload-row" v-if="mode === 'bill'">
         <button class="upload-btn" :disabled="uploading" @click="chooseReceipt">
-          {{ uploading ? '识别中…' : '📷 上传支付截图识别' }}
+          <image class="upload-btn-img" src="/static/icons/act_camera.png" mode="widthFix" />
+          <text>{{ uploading ? '识别中…' : '上传支付截图识别' }}</text>
         </button>
         <text class="upload-hint">支持支付截图、小票照片，自动提取金额/商户/日期/渠道</text>
       </view>
@@ -558,9 +559,10 @@ onShow(() => {
 
 /* 截图记账 */
 .upload-row { display: flex; flex-direction: column; gap: 8rpx; margin-bottom: 22rpx; }
-.upload-btn { margin: 0; height: 84rpx; line-height: 84rpx; border-radius: 42rpx;
+.upload-btn { margin: 0; height: 84rpx; border-radius: 42rpx; display: flex; align-items: center; justify-content: center; gap: 12rpx;
   background: #EFF1FF; color: #6C7BF5; font-size: 27rpx; font-weight: 600;
   border: 2rpx dashed #a9c4f7; }
+.upload-btn-img { width: 40rpx; height: 40rpx; }
 .upload-hint { font-size: 21rpx; color: #A6AAC2; text-align: center; }
 .receipt-preview { margin-bottom: 20rpx; border-radius: 20rpx; overflow: hidden;
   border: 2rpx solid #E9E6F4; background: #f8fafd; }
