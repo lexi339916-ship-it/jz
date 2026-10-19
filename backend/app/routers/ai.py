@@ -3,12 +3,15 @@
 安全设计：草稿不直接落库，必须由用户确认后走 /api/bills 保存；
 每次调用限流并写日志；输出经结构校验与脱敏。
 """
+import base64
+import io
 import re
 import time
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from PIL import Image
 from sqlalchemy import extract, func, or_, select
 from sqlalchemy.orm import Session
 
@@ -17,14 +20,15 @@ from app.deps import get_current_user, get_db
 from app.models import Bill, BillCategory, User
 from app.schemas import (
     AskIn, AskOut, BillDraft, CategoryStatItem, InsightOut, NoteDraft,
-    ParseBillIn, ParseBillOut, ParseNoteIn, ParseNoteOut, SummaryOut,
+    ParseBillIn, ParseBillOut, ParseNoteIn, ParseNoteOut, ParseReceiptOut,
+    ReceiptDraft, SummaryOut,
 )
 from app.services import ai_service
 from app.services.ai_service import (
     AIServiceError, PROMPT_VERSION, build_ask_step1_messages,
     build_ask_step2_messages, build_insight_messages, build_parse_bill_messages,
-    build_parse_note_messages, build_summary_messages, check_rate_limit,
-    ensure_configured, log_call, mask_sensitive,
+    build_parse_note_messages, build_receipt_messages, build_summary_messages,
+    check_rate_limit, ensure_configured, log_call, mask_sensitive,
 )
 
 router = APIRouter()
@@ -298,7 +302,140 @@ async def summary(month: str = Query(default=""), period: str = Query(default="m
         raise exc
 
 
-# ---------------- 首页一句话洞察 ----------------
+# ---------------- 支付截图识别 ----------------
+
+_RECEIPT_STATUS = {"success", "pending", "refunded", "failed", "unknown"}
+_MAX_IMAGE_BYTES = 5 * 1024 * 1024
+
+
+def _check_duplicate(db: Session, user: User, amount: Decimal | None,
+                     bill_date) -> tuple[bool, str]:
+    """近 7 天同金额（±0.01）的支出 → 疑似重复（确定性规则，不是模型猜测）。"""
+    if amount is None:
+        return False, ""
+    anchor = bill_date or date.today()
+    rows = db.scalars(select(Bill).where(
+        Bill.user_id == user.id, Bill.type == "expense",
+        Bill.bill_date >= anchor - timedelta(days=7),
+        Bill.bill_date <= anchor + timedelta(days=1))).all()
+    for row in rows:
+        if abs(Decimal(str(row.amount)) - amount) <= Decimal("0.01"):
+            cat = db.get(BillCategory, row.category_id) if row.category_id else None
+            hint = (f"疑似与 {row.bill_date} 的 ¥{row.amount}"
+                    f"（{cat.name if cat else '未分类'}）重复，请核对后再保存")
+            return True, hint
+    return False, ""
+
+
+def _validate_receipt_draft(db: Session, user: User, data: dict) -> ReceiptDraft:
+    """校验视觉模型输出：缺失即待确认、分类白名单、状态白名单、重复检测。"""
+    categories = _category_names(db, user)
+    amount = _coerce_amount(data.get("amount"))
+    bill_date = _coerce_date(data.get("bill_date"))
+    bill_time = str(data.get("bill_time") or "").strip()[:5]
+    status = data.get("status") if data.get("status") in _RECEIPT_STATUS else "unknown"
+    pay_channel = str(data.get("pay_channel") or "").strip()[:20]
+    funding = str(data.get("funding_account") or "").strip()[:40]
+    # 证据校验：账户名必须出现在模型逐字列出的可见文字清单中，否则视为“未显示”
+    visible = data.get("visible_texts")
+    visible_texts = [str(t) for t in visible if isinstance(t, str)] \
+        if isinstance(visible, list) else []
+    evidence = str(data.get("funding_account_evidence") or "").strip()[:80]
+    if funding and not any(funding in t for t in visible_texts):
+        funding = ""
+    merchant = mask_sensitive(str(data.get("merchant") or "").strip()[:60])
+    category = str(data.get("category") or "").strip()[:40]
+
+    missing = [f for f in data.get("missing_fields", []) if isinstance(f, str)][:8]
+    if not category or category not in categories:
+        category = "其他"
+        if "category" not in missing:
+            missing.append("category")
+    if amount is None and "amount" not in missing:
+        missing.append("amount")
+    if bill_date is None and "bill_date" not in missing:
+        missing.append("bill_date")
+    if not pay_channel and "pay_channel" not in missing:
+        missing.append("pay_channel")
+    if not funding and "funding_account" not in missing:
+        missing.append("funding_account")
+
+    bill_type = "income" if status == "refunded" else (
+        "income" if data.get("type") == "income" and status != "failed" else "expense")
+    duplicate, hint = _check_duplicate(db, user, amount, bill_date)
+
+    return ReceiptDraft(
+        type=bill_type, amount=amount, merchant=merchant, category=category,
+        bill_date=bill_date, bill_time=bill_time,
+        remark=merchant or str(data.get("remark") or "").strip()[:200],
+        status=status, pay_channel=pay_channel, funding_account=funding,
+        missing_fields=missing, duplicate_suspect=duplicate, duplicate_hint=hint)
+
+
+@router.post("/parse-receipt", response_model=ParseReceiptOut)
+async def parse_receipt(file: UploadFile = File(...),
+                        user: User = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    """上传支付截图/小票，视觉模型提取字段并生成待确认草稿（不直接入库）。"""
+    ensure_configured()
+    check_rate_limit(db, user.id)
+
+    raw = await file.read()
+    if len(raw) > _MAX_IMAGE_BYTES:
+        raise HTTPException(400, "图片不能超过 5MB，请压缩后重试")
+    if not raw:
+        raise HTTPException(400, "上传的文件为空")
+    try:
+        img = Image.open(io.BytesIO(raw))
+        img.load()
+        img = img.convert("RGB")
+    except Exception:
+        raise HTTPException(400, "无法解析该图片，请上传 jpg/png/webp 格式")
+
+    # 压缩到最长边 1280，控制视觉模型 token 成本
+    img.thumbnail((1280, 1280))
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=85)
+    data_url = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+
+    categories = _category_names(db, user)
+    messages = build_receipt_messages(data_url, categories)
+    start = time.monotonic()
+    try:
+        data = await ai_service.chat_json(
+            messages, model=config.AI_VISION_MODEL,
+            retry_hint='只输出一个 JSON 对象（以 {"found"...} 开头），不要任何解释或 Markdown。')
+        latency = int((time.monotonic() - start) * 1000)
+        if not bool(data.get("found", True)):
+            log_call(db, user_id=user.id, feature="parse_receipt", status="success",
+                     latency_ms=latency, input_chars=len(raw),
+                     model=config.AI_VISION_MODEL)
+            return ParseReceiptOut(
+                found=False, drafts=[], notice=str(data.get("notice") or "未识别到支付信息")[:200],
+                prompt_version=PROMPT_VERSION, model=config.AI_VISION_MODEL,
+                latency_ms=latency)
+        draft = _validate_receipt_draft(db, user, data)
+        notice = str(data.get("notice") or "")[:200]
+        if draft.status == "failed":
+            log_call(db, user_id=user.id, feature="parse_receipt", status="success",
+                     latency_ms=latency, input_chars=len(raw),
+                     model=config.AI_VISION_MODEL)
+            return ParseReceiptOut(
+                found=True, drafts=[], notice="识别到交易失败/未完成，未生成账单草稿。",
+                prompt_version=PROMPT_VERSION, model=config.AI_VISION_MODEL,
+                latency_ms=latency)
+        log_call(db, user_id=user.id, feature="parse_receipt", status="success",
+                 latency_ms=latency, input_chars=len(raw), model=config.AI_VISION_MODEL)
+        return ParseReceiptOut(
+            found=True, drafts=[draft], notice=notice,
+            prompt_version=PROMPT_VERSION, model=config.AI_VISION_MODEL,
+            latency_ms=latency)
+    except AIServiceError as exc:
+        latency = int((time.monotonic() - start) * 1000)
+        log_call(db, user_id=user.id, feature="parse_receipt", status="error",
+                 latency_ms=latency, input_chars=len(raw),
+                 error_msg=exc.message, model=config.AI_VISION_MODEL)
+        raise exc
 
 # 进程内当日缓存：同一用户同一天只调用一次模型（成本控制）
 _INSIGHT_CACHE: dict[int, tuple[str, str]] = {}

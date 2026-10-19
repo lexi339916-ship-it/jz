@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import { apiParseBill, apiParseNote, apiAddBill, apiAddNote, apiCategories, apiSummary, apiAsk } from '../../api/index.js'
+import {
+  apiParseBill, apiParseNote, apiAddBill, apiAddNote, apiCategories,
+  apiSummary, apiAsk, apiParseReceipt,
+} from '../../api/index.js'
 
 const mode = ref('bill')           // bill 记账 / note 便签 / ask 问账本 / summary 总结
 const text = ref('')
@@ -12,8 +15,53 @@ const notice = ref('')
 const meta = ref(null)             // { prompt_version, model, latency_ms }
 const categories = ref([])
 const savingIndex = ref(-1)
+const uploading = ref(false)
+const receiptPreview = ref('')
 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
   .toISOString().slice(0, 10)
+
+const RECEIPT_STATUS_LABEL = {
+  success: '交易成功', pending: '处理中', refunded: '已退款',
+  failed: '交易失败', unknown: '状态未知',
+}
+
+// 上传支付截图 → 视觉模型识别 → 生成可编辑草稿
+function chooseReceipt() {
+  uni.chooseImage({
+    count: 1,
+    sizeType: ['compressed'],
+    success: async (res) => {
+      const path = res.tempFilePaths && res.tempFilePaths[0]
+      if (!path) return
+      receiptPreview.value = path
+      uploading.value = true
+      error.value = null
+      result.value = null
+      try {
+        const data = await apiParseReceipt(path)
+        if (!data.found) {
+          receiptPreview.value = ''
+          uni.showToast({ title: data.notice || '未识别到支付信息', icon: 'none', duration: 2500 })
+          return
+        }
+        result.value = { drafts: data.drafts || [], isReceipt: true }
+        notice.value = data.notice || ''
+        meta.value = { prompt_version: data.prompt_version, model: data.model, latency_ms: data.latency_ms }
+        if (!data.drafts || !data.drafts.length) {
+          uni.showToast({ title: data.notice || '未生成账单草稿', icon: 'none', duration: 2500 })
+        }
+      } catch (e) {
+        receiptPreview.value = ''
+      } finally {
+        uploading.value = false
+      }
+    },
+  })
+}
+
+function statusLabel(s) {
+  return RECEIPT_STATUS_LABEL[s] || s || '状态未知'
+}
 
 // 月度/周度总结
 const summaryPeriod = ref('month')   // month / week
@@ -156,7 +204,10 @@ function setDraftDate(draft) { draft.bill_date = draft.bill_date || today }
 function setDraftCategory(draft) { if (!draft.category) draft.category = '其他' }
 
 const missingText = (fields) => {
-  const map = { amount: '金额', bill_date: '日期', category: '分类', title: '标题', due_at: '时间' }
+  const map = {
+    amount: '金额', bill_date: '日期', category: '分类', title: '标题', due_at: '时间',
+    pay_channel: '支付渠道', funding_account: '扣款账户', merchant: '商户',
+  }
   return fields.map(f => map[f] || f).join('、')
 }
 
@@ -168,13 +219,15 @@ async function confirmDraft(index) {
   if (!d.bill_date) { uni.showToast({ title: '请选择日期', icon: 'none' }); return }
   savingIndex.value = index
   try {
+    const remark = [d.remark, d.bill_time].filter(Boolean).join(' ')
     await apiAddBill({
       type: d.type,
       amount: Number(d.amount).toFixed(2),
       category: d.category,
       bill_date: d.bill_date,
-      remark: d.remark,
-      source: 'ai',   // 标记来源为 AI 草稿确认保存，便于追溯
+      remark: remark.slice(0, 200),
+      // 截图识别来源标记为 receipt，便于追溯
+      source: result.value.isReceipt ? 'receipt' : 'ai',
     })
     uni.showToast({ title: '已保存账单', icon: 'success' })
     result.value.drafts.splice(index, 1)
@@ -253,6 +306,16 @@ onShow(() => {
       <view class="example-row" v-if="mode !== 'summary'">
         <text class="example" v-for="e in examples[mode]" :key="e" @click="text = e">{{ e }}</text>
       </view>
+      <!-- 截图记账 -->
+      <view class="upload-row" v-if="mode === 'bill'">
+        <button class="upload-btn" :disabled="uploading" @click="chooseReceipt">
+          {{ uploading ? '识别中…' : '📷 上传支付截图识别' }}
+        </button>
+        <text class="upload-hint">支持支付截图、小票照片，自动提取金额/商户/日期/渠道</text>
+      </view>
+      <view v-if="receiptPreview" class="receipt-preview">
+        <image :src="receiptPreview" mode="widthFix" class="receipt-img" />
+      </view>
       <button class="btn btn-primary" :class="{ 'btn-disabled': loading }" :disabled="loading" @click="parse">
         {{ loading ? 'AI 解析中…' : 'AI 解析' }}
       </button>
@@ -289,6 +352,23 @@ onShow(() => {
             </picker>
           </view>
           <input class="d-remark" v-model="d.remark" placeholder="备注（可编辑）" placeholder-class="ph" />
+          <view class="receipt-info" v-if="result.isReceipt">
+            <view class="ri-row">
+              <text class="ri-label">交易状态</text>
+              <text class="ri-val">{{ statusLabel(d.status) }}</text>
+            </view>
+            <view class="ri-row">
+              <text class="ri-label">支付渠道</text>
+              <text class="ri-val" :class="{ 'ri-wait': !d.pay_channel }">{{ d.pay_channel || '待确认' }}</text>
+            </view>
+            <view class="ri-row">
+              <text class="ri-label">扣款账户</text>
+              <text class="ri-val" :class="{ 'ri-wait': !d.funding_account }">
+                {{ d.funding_account || '待确认（截图中未显示）' }}
+              </text>
+            </view>
+            <view class="dup-warn" v-if="d.duplicate_suspect">⚠ {{ d.duplicate_hint }}</view>
+          </view>
           <view class="missing" v-if="d.missing_fields && d.missing_fields.length">
             ⚠ 待补充：{{ missingText(d.missing_fields) }}
           </view>
@@ -462,6 +542,24 @@ onShow(() => {
 .chip-low.chip-active { background: #f2f4f8; color: #5b6473; border-color: #cfd6e2; font-weight: 700; }
 
 .meta { font-size: 21rpx; color: #9aa3b5; margin-top: 20rpx; }
+
+/* 截图记账 */
+.upload-row { display: flex; flex-direction: column; gap: 8rpx; margin-bottom: 22rpx; }
+.upload-btn { margin: 0; height: 84rpx; line-height: 84rpx; border-radius: 42rpx;
+  background: #eef3ff; color: #2f6fed; font-size: 27rpx; font-weight: 600;
+  border: 2rpx dashed #a9c4f7; }
+.upload-hint { font-size: 21rpx; color: #9aa3b5; text-align: center; }
+.receipt-preview { margin-bottom: 20rpx; border-radius: 16rpx; overflow: hidden;
+  border: 2rpx solid #e8edf5; background: #f8fafd; }
+.receipt-img { width: 100%; display: block; }
+
+.receipt-info { background: #fff; border-radius: 14rpx; padding: 16rpx 20rpx; margin-bottom: 18rpx; }
+.ri-row { display: flex; justify-content: space-between; align-items: center; padding: 8rpx 0; }
+.ri-label { font-size: 23rpx; color: #7c8595; }
+.ri-val { font-size: 24rpx; color: #263246; font-weight: 500; }
+.ri-wait { color: #d97706; font-weight: 600; }
+.dup-warn { margin-top: 10rpx; background: #fdf6ec; color: #b45309; border-radius: 10rpx;
+  padding: 12rpx 16rpx; font-size: 22rpx; }
 
 .sum-head { display: flex; align-items: center; justify-content: space-between; }
 .sum-month { display: block; font-size: 26rpx; font-weight: 700; color: #4a5568; margin-top: 22rpx; }

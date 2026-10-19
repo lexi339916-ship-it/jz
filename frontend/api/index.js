@@ -1,5 +1,7 @@
 /** 与后端 REST API 一一对应的接口封装 */
 import http from './request.js'
+import { BASE_URL } from '../common/config.js'
+import store from '../store/user.js'
 
 // ---- 认证 ----
 export const apiRegister = (data) => http.post('/api/auth/register', data)
@@ -51,3 +53,30 @@ export const apiParseNote = (text) => http.post('/api/ai/parse-note', { text })
 export const apiSummary = (period = 'month') => http.get('/api/ai/summary', { period })
 export const apiInsight = (refresh = false) => http.get('/api/ai/insight', refresh ? { refresh: 1 } : {})
 export const apiAsk = (question) => http.post('/api/ai/ask', { question })
+
+/** 上传支付截图（multipart），返回识别草稿 */
+export const apiParseReceipt = (filePath) => new Promise((resolve, reject) => {
+  uni.uploadFile({
+    url: BASE_URL + '/api/ai/parse-receipt',
+    filePath,
+    name: 'file',
+    timeout: 60000,
+    header: store.token ? { Authorization: 'Bearer ' + store.token } : {},
+    success(res) {
+      let body = {}
+      try { body = JSON.parse(res.data) } catch (e) { body = {} }
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        resolve(body)
+      } else {
+        const message = body.message || `上传失败（${res.statusCode}）`
+        uni.showToast({ title: message, icon: 'none' })
+        reject({ status: res.statusCode, message, body })
+      }
+    },
+    fail() {
+      const message = '网络连接失败，请检查后端服务'
+      uni.showToast({ title: message, icon: 'none' })
+      reject({ status: -1, message, body: null })
+    },
+  })
+})

@@ -28,6 +28,8 @@ TOKEN_EXPIRE_DAYS = _int_env("TOKEN_EXPIRE_DAYS", 7)
 AI_BASE_URL = os.getenv("AI_BASE_URL", "").rstrip("/")
 AI_API_KEY = os.getenv("AI_API_KEY", "")
 AI_MODEL = os.getenv("AI_MODEL", "")
+# 视觉模型（支付截图/小票识别），智谱 glm-4v-flash 免费
+AI_VISION_MODEL = os.getenv("AI_VISION_MODEL", "glm-4v-flash")
 AI_TIMEOUT_SECONDS = _int_env("AI_TIMEOUT_SECONDS", 30)
 # 每用户每日 AI 调用上限，用于控制成本（课程要求：调用成本控制）
 AI_DAILY_LIMIT = _int_env("AI_DAILY_LIMIT", 30)

@@ -61,8 +61,8 @@ class BillIn(BaseModel):
     category: str = Field(min_length=1, max_length=40)
     bill_date: date
     remark: str = Field(default="", max_length=200)
-    # manual=手动录入；ai=AI 草稿经用户确认后保存（可追溯）
-    source: Literal["manual", "ai"] = "manual"
+    # manual=手动录入；ai=AI 草稿确认后保存；receipt=截图识别确认后保存（可追溯）
+    source: Literal["manual", "ai", "receipt"] = "manual"
 
 
 class BillOut(BaseModel):
@@ -256,6 +256,32 @@ class NoteDraft(BaseModel):
 
 class ParseNoteOut(BaseModel):
     drafts: list[NoteDraft]
+    notice: str = ""
+    prompt_version: str
+    model: str
+    latency_ms: int
+
+
+class ReceiptDraft(BaseModel):
+    """截图识别出的账单草稿：字段缺失一律标记待确认，不猜测。"""
+    type: Literal["income", "expense"] = "expense"
+    amount: Decimal | None = None
+    merchant: str = ""
+    category: str = "其他"
+    bill_date: date | None = None
+    bill_time: str = ""
+    remark: str = ""
+    status: Literal["success", "pending", "refunded", "failed", "unknown"] = "unknown"
+    pay_channel: str = ""
+    funding_account: str = ""
+    missing_fields: list[str] = Field(default_factory=list)
+    duplicate_suspect: bool = False
+    duplicate_hint: str = ""
+
+
+class ParseReceiptOut(BaseModel):
+    found: bool = True
+    drafts: list[ReceiptDraft]
     notice: str = ""
     prompt_version: str
     model: str
