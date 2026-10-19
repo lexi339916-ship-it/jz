@@ -67,12 +67,17 @@ const calCells = computed(() => {
       isToday: d.date === todayStr,
       selected: d.date === selectedDate.value,
       heat: expense > 0 && expenseMax.value > 0
-        ? Math.min(0.3, 0.06 + 0.24 * (expense / expenseMax.value))
+        ? Math.min(0.16, 0.05 + 0.11 * (expense / expenseMax.value))
         : 0,
     })
   }
   while (cells.length % 7 !== 0) cells.push({ key: `e${cells.length}`, blank: true })
-  return cells
+  // 手账贴纸感：交替轻微旋转 + 周末标记
+  return cells.map((c, idx) => ({
+    ...c,
+    tilt: c.blank ? 0 : [(-0.9), 0, 0.9][idx % 3],
+    isWeekend: !c.blank && (idx % 7 >= 5),
+  }))
 })
 
 const monthSummary = computed(() => {
@@ -244,15 +249,19 @@ onShow(() => {
           <text class="cal-sum-item">收入 <text class="in">¥{{ monthSummary.income.toFixed(2) }}</text></text>
         </view>
         <view class="cal-week">
-          <text v-for="w in ['一', '二', '三', '四', '五', '六', '日']" :key="w">{{ w }}</text>
+          <text v-for="w in ['一', '二', '三', '四', '五', '六', '日']" :key="w"
+            :class="{ wk: w === '六' || w === '日' }">{{ w }}</text>
         </view>
         <view class="cal-grid">
-          <view v-for="c in calCells" :key="c.key"
-            class="cal-cell" :class="{ 'cal-selected': c.selected }"
-            :style="c.heat && !c.blank ? { background: `rgba(255, 107, 129, ${c.heat})` } : {}"
+          <view v-for="(c, idx) in calCells" :key="c.key"
+            class="cal-cell"
+            :class="{ 'cal-blank': c.blank, 'cal-selected': c.selected }"
+            :style="!c.blank ? { transform: `rotate(${c.tilt}deg)`, background: c.heat ? `rgba(242, 126, 126, ${c.heat})` : '' } : {}"
             @click="selectDay(c)">
             <block v-if="!c.blank">
-              <view class="cal-day" :class="{ 'cal-today': c.isToday }">{{ c.day }}</view>
+              <view class="cal-day" :class="{ 'cal-today': c.isToday, 'cal-weekend': c.isWeekend }">{{ c.day }}</view>
+              <view v-if="c.showExpense || c.showIncome" class="cal-dot"
+                :style="{ background: c.showExpense ? '#E45858' : '#1FA97F' }" />
               <text v-if="c.showExpense" class="cal-amount out">-{{ fmtAmount(c.expense) }}</text>
               <text v-if="c.showIncome" class="cal-amount in">+{{ fmtAmount(c.income) }}</text>
             </block>
@@ -262,6 +271,7 @@ onShow(() => {
 
       <!-- 选中日期的明细 -->
       <view class="card day-panel" v-if="selectedDate">
+        <image class="day-tape" src="/static/doodles/tape_mint.png" mode="widthFix" />
         <view class="day-head">
           <text class="day-title">{{ selectedDateLabel }}</text>
           <text class="day-sum">
@@ -351,27 +361,35 @@ onShow(() => {
 
 /* ===== 日历 ===== */
 .cal-card { padding: 24rpx 18rpx 18rpx; }
-.cal-summary { display: flex; justify-content: space-between; padding: 0 10rpx 18rpx;
-  border-bottom: 1rpx solid #F1EFF9; }
-.cal-sum-item { font-size: 24rpx; color: #8A90A8; }
-.out { color: #F27E7E; } .in { color: #45C39A; }
+.cal-summary { display: flex; justify-content: space-between; gap: 14rpx; padding: 0 6rpx 18rpx;
+  border-bottom: 1rpx dashed #E7E3F4; }
+.cal-sum-item { font-size: 23rpx; color: #7A7F96; background: #F6F4FB; border-radius: 999rpx;
+  padding: 8rpx 18rpx; }
+.out { color: #E45858; } .in { color: #1FA97F; }
 .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); margin: 16rpx 0 8rpx; }
-.cal-week text { text-align: center; font-size: 22rpx; color: #A6AAC2; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8rpx; }
-.cal-cell { min-height: 112rpx; border-radius: 18rpx; padding: 8rpx 2rpx 6rpx;
+.cal-week text { text-align: center; font-size: 21rpx; color: #8A90A8; letter-spacing: 1rpx; }
+.cal-week .wk { color: #C77BA6; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8rpx; padding: 4rpx 2rpx 6rpx; }
+.cal-cell { position: relative; min-height: 114rpx; border-radius: 18rpx; padding: 8rpx 2rpx 6rpx;
   display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
-  border: 2rpx solid transparent; }
-.cal-selected { border-color: #6C7BF5; background-color: #EFF1FF; }
+  border: 2rpx solid transparent; background: #FFFDF8;
+  box-shadow: 0 4rpx 10rpx rgba(124, 139, 255, .07); }
+.cal-blank { background: transparent; box-shadow: none; }
+.cal-selected { border: 2rpx dashed #6C7BF5; background-color: #FBFAFF; }
 .cal-day { font-size: 24rpx; font-weight: 600; color: #4A4F6B; line-height: 40rpx;
-  min-width: 40rpx; text-align: center; border-radius: 24rpx; }
-.cal-today { background: #6C7BF5; color: #fff; }
-.cal-amount { font-size: 18rpx; line-height: 26rpx; max-width: 100%;
+  min-width: 40rpx; text-align: center; border-radius: 10rpx; padding: 0 4rpx; }
+.cal-weekend { color: #C77BA6; }
+.cal-today { background: linear-gradient(180deg, transparent 46%, rgba(255, 214, 140, .85) 46%,
+  rgba(255, 214, 140, .85) 88%, transparent 88%); color: #7A5A1F; }
+.cal-dot { position: absolute; top: 8rpx; right: 8rpx; width: 10rpx; height: 10rpx; border-radius: 5rpx; }
+.cal-amount { font-size: 17rpx; line-height: 24rpx; max-width: 100%;
   overflow: hidden; white-space: nowrap; }
 .cal-amount.out { color: #E45858; font-weight: 700; }
 .cal-amount.in { color: #1FA97F; font-weight: 700; }
 
 /* ===== 当日明细 ===== */
-.day-panel { padding: 24rpx; }
+.day-panel { position: relative; padding: 34rpx 24rpx 24rpx; }
+.day-tape { position: absolute; top: -14rpx; left: 44rpx; width: 120rpx; transform: rotate(-4deg); }
 .day-head { display: flex; justify-content: space-between; align-items: center;
   padding-bottom: 16rpx; border-bottom: 1rpx solid #F1EFF9; }
 .day-title { font-size: 30rpx; font-weight: 700; }

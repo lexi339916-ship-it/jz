@@ -86,6 +86,9 @@ onLoad(async (options) => {
     editId.value = Number(options.id)
     uni.setNavigationBarTitle({ title: '编辑' })
     await loadNote(editId.value)
+  } else if (options && (options.type === 'todo' || options.type === 'note')) {
+    noteType.value = options.type
+    uni.setNavigationBarTitle({ title: options.type === 'todo' ? '新建待办' : '新建便签' })
   }
 })
 </script>
