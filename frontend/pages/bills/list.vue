@@ -325,12 +325,12 @@ onShow(() => {
 .filter-bar { background: #FFFDF8; padding: 20rpx 24rpx 6rpx; }
 .month-row { position: relative; }
 .month-nav { display: flex; align-items: center; justify-content: center; gap: 24rpx; }
-.arrow { font-size: 40rpx; color: #8A90A8; padding: 0 20rpx; }
-.month { font-size: 30rpx; font-weight: 700; }
+.arrow { font-size: 42rpx; color: #8A90A8; padding: 0 20rpx; }
+.month { font-size: 32rpx; font-weight: 700; }
 .view-toggle { position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-  font-size: 24rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 28rpx; padding: 8rpx 22rpx; }
+  font-size: 26rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 28rpx; padding: 8rpx 22rpx; }
 .type-tabs { display: flex; gap: 20rpx; justify-content: center; margin: 18rpx 0 14rpx; }
-.tab { font-size: 26rpx; color: #8A90A8; padding: 8rpx 30rpx; border-radius: 30rpx; background: #F6F4FB; }
+.tab { font-size: 28rpx; color: #8A90A8; padding: 8rpx 30rpx; border-radius: 30rpx; background: #F6F4FB; }
 .tab-active { color: #fff; background: #6C7BF5; font-weight: 600; }
 
 /* ===== 列表 ===== */
@@ -340,49 +340,49 @@ onShow(() => {
 .bill-card:active { opacity: .85; }
 .cat-icon { width: 84rpx; height: 84rpx; border-radius: 28rpx;
   display: flex; align-items: center; justify-content: center; margin-right: 22rpx; flex-shrink: 0; }
-.cat-img { width: 58rpx; height: 58rpx; }
+.cat-img { width: 64rpx; height: 64rpx; }
 .cat-icon.sm { width: 68rpx; height: 68rpx; border-radius: 22rpx; }
 .cat-icon.sm .cat-img { width: 46rpx; height: 46rpx; }
 .mid { flex: 1; min-width: 0; }
 .mid-top { display: flex; justify-content: space-between; align-items: center; }
 .mid-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10rpx; }
-.cat-name { font-size: 28rpx; font-weight: 600; }
-.remark { font-size: 22rpx; color: #A6AAC2; max-width: 380rpx; overflow: hidden;
+.cat-name { font-size: 30rpx; font-weight: 600; }
+.remark { font-size: 25rpx; color: #A6AAC2; max-width: 380rpx; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
-.date { font-size: 22rpx; color: #A6AAC2; }
+.date { font-size: 25rpx; color: #A6AAC2; }
 .row-right { display: flex; align-items: center; gap: 10rpx; }
-.channel-tag { font-size: 20rpx; padding: 2rpx 12rpx; border-radius: 8rpx; font-weight: 600; }
+.channel-tag { font-size: 23rpx; padding: 2rpx 12rpx; border-radius: 8rpx; font-weight: 600; }
 .ai-tag { margin-left: 10rpx; background: #EFF1FF; color: #6C7BF5; border-radius: 8rpx;
-  padding: 2rpx 10rpx; font-size: 20rpx; font-weight: 600; }
-.amount { font-size: 32rpx; font-weight: 800; }
+  padding: 2rpx 10rpx; font-size: 23rpx; font-weight: 600; }
+.amount { font-size: 34rpx; font-weight: 800; }
 .amount-in { color: #1FA97F; } .amount-out { color: #E45858; }
-.load-more { text-align: center; color: #8A90A8; font-size: 24rpx; padding: 24rpx; }
+.load-more { text-align: center; color: #8A90A8; font-size: 26rpx; padding: 24rpx; }
 .empty-doodle { width: 160rpx; display: block; margin: 0 auto 14rpx; opacity: .9; }
 
 /* ===== 日历 ===== */
 .cal-card { padding: 24rpx 18rpx 18rpx; }
 .cal-summary { display: flex; justify-content: space-between; gap: 14rpx; padding: 0 6rpx 18rpx;
   border-bottom: 1rpx dashed #E7E3F4; }
-.cal-sum-item { font-size: 23rpx; color: #7A7F96; background: #F6F4FB; border-radius: 999rpx;
+.cal-sum-item { font-size: 26rpx; color: #7A7F96; background: #F6F4FB; border-radius: 999rpx;
   padding: 8rpx 18rpx; }
 .out { color: #E45858; } .in { color: #1FA97F; }
 .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); margin: 16rpx 0 8rpx; }
-.cal-week text { text-align: center; font-size: 21rpx; color: #8A90A8; letter-spacing: 1rpx; }
+.cal-week text { text-align: center; font-size: 24rpx; color: #8A90A8; letter-spacing: 1rpx; }
 .cal-week .wk { color: #C77BA6; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8rpx; padding: 4rpx 2rpx 6rpx; }
-.cal-cell { position: relative; min-height: 114rpx; border-radius: 18rpx; padding: 8rpx 2rpx 6rpx;
+.cal-cell { position: relative; min-height: 130rpx; border-radius: 18rpx; padding: 8rpx 2rpx 6rpx;
   display: flex; flex-direction: column; align-items: center; box-sizing: border-box;
   border: 2rpx solid transparent; background: #FFFDF8;
   box-shadow: 0 4rpx 10rpx rgba(124, 139, 255, .07); }
 .cal-blank { background: transparent; box-shadow: none; }
 .cal-selected { border: 2rpx dashed #6C7BF5; background-color: #FBFAFF; }
-.cal-day { font-size: 24rpx; font-weight: 600; color: #4A4F6B; line-height: 40rpx;
+.cal-day { font-size: 26rpx; font-weight: 600; color: #4A4F6B; line-height: 40rpx;
   min-width: 40rpx; text-align: center; border-radius: 10rpx; padding: 0 4rpx; }
 .cal-weekend { color: #C77BA6; }
 .cal-today { background: linear-gradient(180deg, transparent 46%, rgba(255, 214, 140, .85) 46%,
   rgba(255, 214, 140, .85) 88%, transparent 88%); color: #7A5A1F; }
 .cal-dot { position: absolute; top: 8rpx; right: 8rpx; width: 10rpx; height: 10rpx; border-radius: 5rpx; }
-.cal-amount { font-size: 17rpx; line-height: 24rpx; max-width: 100%;
+.cal-amount { font-size: 21rpx; line-height: 24rpx; max-width: 100%;
   overflow: hidden; white-space: nowrap; }
 .cal-amount.out { color: #E45858; font-weight: 700; }
 .cal-amount.in { color: #1FA97F; font-weight: 700; }
@@ -392,12 +392,12 @@ onShow(() => {
 .day-tape { position: absolute; top: -14rpx; left: 44rpx; width: 120rpx; transform: rotate(-4deg); }
 .day-head { display: flex; justify-content: space-between; align-items: center;
   padding-bottom: 16rpx; border-bottom: 1rpx solid #F1EFF9; }
-.day-title { font-size: 30rpx; font-weight: 700; }
-.day-sum { font-size: 22rpx; color: #8A90A8; }
+.day-title { font-size: 32rpx; font-weight: 700; }
+.day-sum { font-size: 25rpx; color: #8A90A8; }
 .day-bill { margin: 16rpx 0 0; box-shadow: none; border: 1rpx solid #F1EFF9; padding: 20rpx; }
 .day-empty { text-align: center; padding: 36rpx 0 20rpx; }
-.day-empty-text { display: block; font-size: 24rpx; color: #A6AAC2; margin-bottom: 22rpx; }
-.day-add { width: 340rpx; height: 72rpx; font-size: 26rpx; margin: 0 auto; }
+.day-empty-text { display: block; font-size: 26rpx; color: #A6AAC2; margin-bottom: 22rpx; }
+.day-add { width: 340rpx; height: 72rpx; font-size: 28rpx; margin: 0 auto; }
 
 .fab { position: fixed; right: 40rpx; bottom: 200rpx; width: 108rpx; height: 108rpx;
   border-radius: 54rpx; background: #6C7BF5; color: #fff; font-size: 56rpx;

@@ -211,20 +211,20 @@ onShow(() => {
 <style scoped>
 .page { padding-bottom: 60rpx; }
 .month-nav { display: flex; align-items: center; justify-content: center; gap: 24rpx; padding: 24rpx 0 8rpx; }
-.arrow { font-size: 44rpx; color: #8A90A8; padding: 0 20rpx; }
-.month { font-size: 30rpx; font-weight: 700; }
+.arrow { font-size: 46rpx; color: #8A90A8; padding: 0 20rpx; }
+.month { font-size: 32rpx; font-weight: 700; }
 
 .sum-grid { display: flex; gap: 18rpx; margin: 16rpx 24rpx 0; }
 .sum-card { flex: 1; border-radius: 24rpx; padding: 28rpx 0; text-align: center; color: #fff; }
 .c-green { background: linear-gradient(135deg, #6BD3B2, #3FB894); }
 .c-blue { background: linear-gradient(135deg, #8B97FF, #6C7BF5); }
 .c-orange { background: linear-gradient(135deg, #FFC96B, #F2A93B); }
-.sum-num { display: block; font-size: 32rpx; font-weight: 800; }
-.sum-label { display: block; font-size: 22rpx; opacity: .9; margin-top: 8rpx; }
+.sum-num { display: block; font-size: 34rpx; font-weight: 800; }
+.sum-label { display: block; font-size: 25rpx; opacity: .9; margin-top: 8rpx; }
 
 .row-between { display: flex; justify-content: space-between; align-items: center; }
-.block-title { font-size: 28rpx; font-weight: 700; }
-.muted { font-size: 24rpx; color: #8A90A8; }
+.block-title { font-size: 30rpx; font-weight: 700; }
+.muted { font-size: 26rpx; color: #8A90A8; }
 .bar-track { height: 16rpx; background: #EFEDF7; border-radius: 8rpx; margin-top: 20rpx; overflow: hidden; }
 .bar-track.small { height: 12rpx; margin-top: 12rpx; }
 .bar-fill { height: 100%; background: #6C7BF5; border-radius: 8rpx; }
@@ -233,20 +233,20 @@ onShow(() => {
 .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
 .col-bar { width: 70%; background: #E9E6F4; border-radius: 6rpx 6rpx 0 0; min-height: 4rpx; }
 .col-has { background: linear-gradient(180deg, #9DA9FF, #6C7BF5); }
-.col-label { font-size: 18rpx; color: #A6AAC2; margin-top: 8rpx; }
+.col-label { font-size: 20rpx; color: #A6AAC2; margin-top: 8rpx; }
 
 .mini-tabs { display: flex; gap: 12rpx; }
-.mini-tab { font-size: 24rpx; color: #8A90A8; background: #F6F4FB; border-radius: 26rpx; padding: 6rpx 22rpx; }
+.mini-tab { font-size: 26rpx; color: #8A90A8; background: #F6F4FB; border-radius: 26rpx; padding: 6rpx 22rpx; }
 .mini-active { background: #6C7BF5; color: #fff; font-weight: 600; }
 
 .cat-row { margin-top: 26rpx; }
 .cat-line { display: flex; justify-content: space-between; align-items: center; }
 .cat-left { display: flex; align-items: center; gap: 12rpx; }
 .cat-emoji-img { width: 42rpx; height: 42rpx; }
-.cat-name { font-size: 26rpx; font-weight: 600; }
-.cat-pct { font-size: 22rpx; color: #8A90A8; background: #F6F4FB; border-radius: 10rpx;
+.cat-name { font-size: 28rpx; font-weight: 600; }
+.cat-pct { font-size: 25rpx; color: #8A90A8; background: #F6F4FB; border-radius: 10rpx;
   padding: 2rpx 12rpx; }
-.cat-amount { font-size: 24rpx; color: #5A5F78; }
+.cat-amount { font-size: 26rpx; color: #5A5F78; }
 
 /* 环形占比图 */
 .donut-wrap { display: flex; justify-content: center; padding: 30rpx 0 10rpx; }
@@ -255,7 +255,7 @@ onShow(() => {
 .donut-hole { width: 220rpx; height: 220rpx; border-radius: 50%; background: #FFFDF8;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   box-shadow: inset 0 0 0 2rpx #F1EFF9; }
-.donut-label { font-size: 24rpx; color: #A6AAC2; }
-.donut-total { font-size: 32rpx; font-weight: 800; color: #3A3F58; margin-top: 8rpx; }
+.donut-label { font-size: 26rpx; color: #A6AAC2; }
+.donut-total { font-size: 34rpx; font-weight: 800; color: #3A3F58; margin-top: 8rpx; }
 .ch-dot { width: 20rpx; height: 20rpx; border-radius: 10rpx; }
 </style>

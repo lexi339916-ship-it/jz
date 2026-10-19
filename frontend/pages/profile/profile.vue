@@ -261,26 +261,26 @@ onShow(() => {
   display: flex; align-items: center; justify-content: center; font-size: 52rpx; font-weight: 800; }
 .user-info { margin-left: 26rpx; flex: 1; min-width: 0; }
 .name-row { display: flex; align-items: center; gap: 16rpx; }
-.name { font-size: 36rpx; font-weight: 700; }
-.edit-hint { font-size: 22rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 20rpx; padding: 4rpx 16rpx; }
+.name { font-size: 38rpx; font-weight: 700; }
+.edit-hint { font-size: 25rpx; color: #6C7BF5; background: #EFF1FF; border-radius: 20rpx; padding: 4rpx 16rpx; }
 .name-edit { display: flex; align-items: center; gap: 16rpx; }
 .name-input { height: 64rpx; background: #F6F4FB; border-radius: 12rpx; padding: 0 20rpx;
-  font-size: 30rpx; width: 300rpx; }
-.save-btn { font-size: 26rpx; font-weight: 600; color: #6C7BF5; }
-.username { display: block; font-size: 24rpx; color: #A6AAC2; margin-top: 8rpx; }
+  font-size: 32rpx; width: 300rpx; }
+.save-btn { font-size: 28rpx; font-weight: 600; color: #6C7BF5; }
+.username { display: block; font-size: 26rpx; color: #A6AAC2; margin-top: 8rpx; }
 .status-chip { display: inline-flex; align-items: center; gap: 10rpx; margin-top: 16rpx;
-  background: #E9F8F2; color: #33B98E; border-radius: 28rpx; padding: 8rpx 20rpx; font-size: 22rpx; }
+  background: #E9F8F2; color: #33B98E; border-radius: 28rpx; padding: 8rpx 20rpx; font-size: 25rpx; }
 .status-dot { width: 12rpx; height: 12rpx; border-radius: 6rpx; background: #45C39A; }
 
 /* 统计三卡 */
 .stats-row { display: flex; gap: 18rpx; margin-top: 20rpx; }
 .stat-card { flex: 1; background: #FFFDF8; border-radius: 26rpx; padding: 26rpx 0;
   text-align: center; box-shadow: 0 6rpx 24rpx rgba(124, 139, 255, .10); }
-.stat-num { display: block; font-size: 40rpx; font-weight: 800; color: #6C7BF5; }
-.stat-label { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 8rpx; }
+.stat-num { display: block; font-size: 42rpx; font-weight: 800; color: #6C7BF5; }
+.stat-label { display: block; font-size: 25rpx; color: #A6AAC2; margin-top: 8rpx; }
 
 /* 分组菜单 */
-.group-title { display: block; font-size: 26rpx; color: #8A90A8; font-weight: 600;
+.group-title { display: block; font-size: 28rpx; color: #8A90A8; font-weight: 600;
   margin: 34rpx 8rpx 14rpx; }
 .group-card { background: #FFFDF8; border-radius: 28rpx; overflow: hidden;
   box-shadow: 0 6rpx 24rpx rgba(124, 139, 255, .10); }
@@ -290,22 +290,22 @@ onShow(() => {
 .menu-item:active { background: #FBFAFE; }
 .menu-icon { width: 76rpx; height: 76rpx; border-radius: 26rpx; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center; margin-right: 22rpx; }
-.menu-img { width: 52rpx; height: 52rpx; }
+.menu-img { width: 56rpx; height: 56rpx; }
 .menu-main { flex: 1; min-width: 0; }
-.menu-title { display: block; font-size: 29rpx; font-weight: 600; }
-.menu-sub { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 8rpx; }
-.menu-arrow { font-size: 34rpx; color: #D3D7E7; padding-left: 12rpx; }
+.menu-title { display: block; font-size: 31rpx; font-weight: 600; }
+.menu-sub { display: block; font-size: 25rpx; color: #A6AAC2; margin-top: 8rpx; }
+.menu-arrow { font-size: 36rpx; color: #D3D7E7; padding-left: 12rpx; }
 
 /* 展开表单 */
 .expand-form { padding: 8rpx 26rpx 30rpx; background: #FBFAFE; border-bottom: 1rpx solid #F4F2FA; }
 .form-input { margin-bottom: 18rpx; background: #FFFDF8; }
 .ph { color: #C3C7DA; }
-.form-btn { height: 80rpx; font-size: 28rpx; }
+.form-btn { height: 80rpx; font-size: 30rpx; }
 .budget-row { display: flex; gap: 18rpx; }
 .budget-input { flex: 1; background: #FFFDF8; }
-.budget-save { margin: 0; width: 170rpx; height: 88rpx; font-size: 28rpx; }
-.budget-status { margin-top: 18rpx; font-size: 23rpx; color: #5A5F78; }
-.about-text { display: block; font-size: 24rpx; color: #8A90A8; line-height: 1.9; }
+.budget-save { margin: 0; width: 170rpx; height: 88rpx; font-size: 30rpx; }
+.budget-status { margin-top: 18rpx; font-size: 26rpx; color: #5A5F78; }
+.about-text { display: block; font-size: 26rpx; color: #8A90A8; line-height: 1.9; }
 
 .logout-wrap { margin-top: 40rpx; }
 </style>

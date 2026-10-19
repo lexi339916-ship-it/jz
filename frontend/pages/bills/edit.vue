@@ -175,24 +175,24 @@ onLoad(async (options) => {
 .page { padding-bottom: 60rpx; }
 .type-switch { display: flex; background: #F6F4FB; border-radius: 20rpx; padding: 8rpx; }
 .type-btn { flex: 1; text-align: center; padding: 16rpx 0; border-radius: 12rpx;
-  font-size: 28rpx; color: #8A90A8; }
+  font-size: 30rpx; color: #8A90A8; }
 .type-expense { background: #6C7BF5; color: #fff; font-weight: 700; }
 .type-income { background: #45C39A; color: #fff; font-weight: 700; }
 
 .amount-box { display: flex; align-items: center; margin: 36rpx 0 10rpx; border-bottom: 2rpx solid #eef0f5; padding-bottom: 16rpx; }
 .yen { font-size: 52rpx; font-weight: 800; color: #3A3F58; margin-right: 16rpx; }
-.amount-input { flex: 1; font-size: 64rpx; font-weight: 800; }
+.amount-input { flex: 1; font-size: 68rpx; font-weight: 800; }
 .ph { color: #DCE0EC; }
 
-.field-label { display: block; font-size: 26rpx; color: #5A5F78; margin: 30rpx 0 16rpx; }
+.field-label { display: block; font-size: 28rpx; color: #5A5F78; margin: 30rpx 0 16rpx; }
 .cat-grid { display: flex; flex-wrap: wrap; gap: 16rpx; }
 .cat-item { display: flex; align-items: center; gap: 8rpx; padding: 14rpx 26rpx;
-  background: #F6F4FB; border-radius: 22rpx; font-size: 26rpx; color: #5A5F78; }
-.cat-emoji-img { width: 44rpx; height: 44rpx; }
+  background: #F6F4FB; border-radius: 22rpx; font-size: 28rpx; color: #5A5F78; }
+.cat-emoji-img { width: 48rpx; height: 48rpx; }
 .cat-selected { background: #6C7BF5; color: #fff; font-weight: 700; }
 .channel-account { margin-top: 16rpx; }
 .picker-value { height: 88rpx; background: #F6F4FB; border-radius: 20rpx;
-  display: flex; align-items: center; padding: 0 24rpx; font-size: 28rpx; }
+  display: flex; align-items: center; padding: 0 24rpx; font-size: 30rpx; }
 
 .actions { margin: 30rpx 24rpx; display: flex; flex-direction: column; gap: 20rpx; }
 </style>

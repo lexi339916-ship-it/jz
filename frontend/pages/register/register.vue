@@ -72,10 +72,10 @@ async function onRegister() {
 .page { min-height: 100vh; padding: 50rpx 0 60rpx; }
 .header { padding: 0 44rpx; margin-bottom: 10rpx; }
 .header .page-title { margin: 6rpx 0; }
-.sub { display: block; font-size: 25rpx; color: #8A90A8; letter-spacing: 1rpx; }
-.deco { display: block; margin-top: 12rpx; font-size: 22rpx; color: #C7B7F7; letter-spacing: 10rpx; }
+.sub { display: block; font-size: 27rpx; color: #8A90A8; letter-spacing: 1rpx; }
+.deco { display: block; margin-top: 12rpx; font-size: 25rpx; color: #C7B7F7; letter-spacing: 10rpx; }
 .form { position: relative; margin: 26rpx 40rpx 0; padding: 40rpx 36rpx; }
 .form-item { margin-bottom: 26rpx; }
-.label { display: block; font-size: 25rpx; color: #5A5F78; margin-bottom: 12rpx; letter-spacing: 1rpx; }
+.label { display: block; font-size: 27rpx; color: #5A5F78; margin-bottom: 12rpx; letter-spacing: 1rpx; }
 .ph { color: #C3C7DA; }
 </style>

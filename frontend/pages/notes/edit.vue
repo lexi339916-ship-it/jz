@@ -174,21 +174,21 @@ onLoad(async (options) => {
 .page { padding-bottom: 60rpx; }
 .type-switch { display: flex; background: #F6F4FB; border-radius: 20rpx; padding: 8rpx; }
 .type-btn { flex: 1; text-align: center; padding: 16rpx 0; border-radius: 12rpx;
-  font-size: 28rpx; color: #8A90A8; }
+  font-size: 30rpx; color: #8A90A8; }
 .type-note { background: #6C7BF5; color: #fff; font-weight: 700; }
 .type-todo { background: #F2B45C; color: #fff; font-weight: 700; }
 
-.field-label { display: block; font-size: 26rpx; color: #5A5F78; margin: 30rpx 0 16rpx; }
+.field-label { display: block; font-size: 28rpx; color: #5A5F78; margin: 30rpx 0 16rpx; }
 .ph { color: #C3C7DA; }
 .ta { width: 100%; min-height: 180rpx; background: #F6F4FB; border-radius: 20rpx;
-  padding: 24rpx; font-size: 28rpx; box-sizing: border-box; }
+  padding: 24rpx; font-size: 30rpx; box-sizing: border-box; }
 .due-row { display: flex; gap: 20rpx; }
 .picker-value { height: 88rpx; background: #F6F4FB; border-radius: 20rpx;
-  display: flex; align-items: center; justify-content: center; padding: 0 30rpx; font-size: 28rpx; }
+  display: flex; align-items: center; justify-content: center; padding: 0 30rpx; font-size: 30rpx; }
 
 .pri-row { display: flex; gap: 18rpx; }
 .pri-item { flex: 1; text-align: center; padding: 18rpx 0; border-radius: 20rpx;
-  font-size: 28rpx; background: #F6F4FB; color: #8A90A8; font-weight: 600; }
+  font-size: 30rpx; background: #F6F4FB; color: #8A90A8; font-weight: 600; }
 .pri-high.pri-active { background: #FFEDEE; color: #F27E7E; }
 .pri-medium.pri-active { background: #FFF6E7; color: #F2B45C; }
 .pri-low.pri-active { background: #F4F2FA; color: #6B7089; }
@@ -198,11 +198,11 @@ onLoad(async (options) => {
 .color-item { width: 60rpx; height: 60rpx; border-radius: 30rpx; display: flex;
   align-items: center; justify-content: center; box-shadow: 0 4rpx 10rpx rgba(124, 139, 255, .16); }
 .color-active { border: 4rpx solid #4E5170; }
-.color-check { color: #fff; font-size: 26rpx; font-weight: 800; }
+.color-check { color: #fff; font-size: 28rpx; font-weight: 800; }
 
 .pin-row { display: flex; justify-content: space-between; align-items: center; margin-top: 34rpx; }
-.pin-title { display: block; font-size: 28rpx; font-weight: 600; }
-.pin-sub { display: block; font-size: 22rpx; color: #A6AAC2; margin-top: 6rpx; }
+.pin-title { display: block; font-size: 30rpx; font-weight: 600; }
+.pin-sub { display: block; font-size: 25rpx; color: #A6AAC2; margin-top: 6rpx; }
 
 .actions { margin: 30rpx 24rpx; display: flex; flex-direction: column; gap: 20rpx; }
 </style>

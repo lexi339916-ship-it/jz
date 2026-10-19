@@ -19,7 +19,7 @@ page {
     linear-gradient(178deg, #EAF0FF 0%, #F2EEFF 34%, #FDFBF6 72%, #FFFDF9 100%);
   background-size: 24rpx 24rpx, 100% 100%;
   color: #3A3F58;
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
 }
 
@@ -69,7 +69,7 @@ page {
   justify-content: center;
   height: 92rpx;
   border-radius: 999rpx;
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
   border: none;
@@ -107,7 +107,7 @@ page {
   border: 1rpx solid #E9E6F4;
   border-radius: 22rpx;
   padding: 0 26rpx;
-  font-size: 28rpx;
+  font-size: 30rpx;
   color: #3A3F58;
   box-sizing: border-box;
 }
@@ -118,7 +118,7 @@ page {
   align-items: center;
   padding: 4rpx 16rpx;
   border-radius: 12rpx;
-  font-size: 22rpx;
+  font-size: 25rpx;
 }
 
 /* AI 生成内容标识 */
@@ -129,7 +129,7 @@ page {
   border-radius: 999rpx;
   background: #EFF1FF;
   color: #6C7BF5;
-  font-size: 22rpx;
+  font-size: 25rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
 }
@@ -139,13 +139,13 @@ page {
   text-align: center;
   color: #A6AAC2;
   padding: 80rpx 0;
-  font-size: 26rpx;
+  font-size: 28rpx;
   letter-spacing: 1rpx;
 }
 
 /* 分区标题 */
 .section-title {
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 800;
   color: #3A3F58;
   margin: 8rpx 4rpx;
@@ -155,7 +155,7 @@ page {
   letter-spacing: 1rpx;
 }
 .section-more {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #8A90A8;
   font-weight: 400;
 }
@@ -169,7 +169,7 @@ page {
 /* 通用页面大标题（手账页眉） */
 .page-title {
   display: block;
-  font-size: 46rpx;
+  font-size: 48rpx;
   font-weight: 800;
   color: #3A3F58;
   letter-spacing: 2rpx;

@@ -86,27 +86,27 @@ function goRegister() {
   background: radial-gradient(circle at 40% 40%, #FFF3D9, #FFEAC2 70%); opacity: .8; }
 .doodle-coffee { left: 26rpx; top: 6rpx; width: 86rpx; transform: rotate(-6deg); }
 .doodle-stars { right: 20rpx; top: -2rpx; width: 104rpx; transform: rotate(5deg); }
-.brand { position: relative; display: block; font-size: 60rpx; font-weight: 800; color: #5A54B8;
+.brand { position: relative; display: block; font-size: 62rpx; font-weight: 800; color: #5A54B8;
   letter-spacing: 4rpx; text-shadow: 0 4rpx 0 rgba(255, 255, 255, .8); }
 .brand-underline { display: block; width: 244rpx; height: 28rpx; margin: -2rpx auto 0; opacity: .75; }
-.slogan { position: relative; display: block; margin-top: 10rpx; font-size: 26rpx; color: #8A90A8;
+.slogan { position: relative; display: block; margin-top: 10rpx; font-size: 28rpx; color: #8A90A8;
   letter-spacing: 2rpx; }
-.deco-dots { display: block; margin-top: 14rpx; font-size: 22rpx; color: #C7B7F7; letter-spacing: 10rpx; }
+.deco-dots { display: block; margin-top: 14rpx; font-size: 25rpx; color: #C7B7F7; letter-spacing: 10rpx; }
 
 /* 卡片 */
 .form { position: relative; margin: 30rpx 40rpx 0; padding: 46rpx 36rpx 36rpx; }
 .form-tape { position: absolute; top: -24rpx; left: 50%; width: 148rpx;
   transform: translateX(-50%) rotate(-3deg); }
-.form-title { display: block; font-size: 36rpx; font-weight: 800; color: #3A3F58; letter-spacing: 1rpx; }
-.form-sub { display: block; font-size: 24rpx; color: #A6AAC2; margin: 10rpx 0 34rpx; }
+.form-title { display: block; font-size: 38rpx; font-weight: 800; color: #3A3F58; letter-spacing: 1rpx; }
+.form-sub { display: block; font-size: 26rpx; color: #A6AAC2; margin: 10rpx 0 34rpx; }
 .form-item { margin-bottom: 28rpx; }
-.label { display: block; font-size: 25rpx; color: #5A5F78; margin-bottom: 12rpx; letter-spacing: 1rpx; }
+.label { display: block; font-size: 27rpx; color: #5A5F78; margin-bottom: 12rpx; letter-spacing: 1rpx; }
 /* 手绘输入框：虚线描边 + 不规则圆角 */
 .input { border: 2rpx dashed #C9BFF0; background: #FFFDF8;
   border-radius: 255rpx 20rpx 235rpx 18rpx / 18rpx 235rpx 20rpx 255rpx; }
 .ph { color: #C3C7DA; }
 .links { margin-top: 26rpx; text-align: center; }
-.link { color: #6C7BF5; font-size: 25rpx; letter-spacing: 1rpx; }
+.link { color: #6C7BF5; font-size: 27rpx; letter-spacing: 1rpx; }
 .login-cat { position: fixed; right: 14rpx; bottom: 10rpx; width: 122rpx; opacity: .92; }
 .login-flower { position: fixed; left: 8rpx; bottom: 6rpx; width: 92rpx; opacity: .9; }
 </style>

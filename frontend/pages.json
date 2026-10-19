@@ -17,6 +17,8 @@
     "selectedColor": "#6C7BF5",
     "backgroundColor": "#FFFDF8",
     "borderStyle": "white",
+    "fontSize": "12px",
+    "iconWidth": "27px",
     "list": [
       {"pagePath": "pages/index/index", "text": "首页", "iconPath": "static/tabbar/home.png", "selectedIconPath": "static/tabbar/home-active.png"},
       {"pagePath": "pages/bills/list", "text": "账单", "iconPath": "static/tabbar/bill.png", "selectedIconPath": "static/tabbar/bill-active.png"},
