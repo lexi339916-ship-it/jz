@@ -191,7 +191,7 @@ function selectCell(c) {
 }
 
 function shortTitle(title) {
-  return title.length > 4 ? title.slice(0, 4) : title
+  return title.length > 5 ? title.slice(0, 5) : title
 }
 
 function taskTime(n) {
@@ -393,8 +393,7 @@ onShow(load)
               <text class="cal-num">{{ c.day }}</text>
               <view class="cal-tags" v-if="c.tags.length">
                 <view class="cal-tag" v-for="t in c.tags" :key="t.id"
-                  :style="{ background: taskColor(t.color) + '33' }">
-                  <view class="tag-dot" :style="{ background: taskColor(t.color) }" />
+                  :style="{ background: taskColor(t.color) + '55' }">
                   <text class="tag-text">{{ shortTitle(t.title) }}</text>
                 </view>
                 <text v-if="c.more" class="cal-more">+{{ c.more }}</text>
@@ -623,12 +622,12 @@ onShow(load)
   justify-content: center; line-height: 1; margin-left: 6rpx; }
 
 /* 月历 */
-.cal-panel { margin: 0 24rpx 14rpx; padding: 18rpx 14rpx 14rpx; }
+.cal-panel { margin: 0 8rpx 14rpx; padding: 12rpx 4rpx 10rpx; }
 .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 8rpx; }
 .cal-week text { text-align: center; font-size: 24rpx; color: #6F748C; }
 .cal-week .wk { color: #C77BA6; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6rpx; }
-.cal-cell { min-height: 136rpx; border-radius: 16rpx; padding: 6rpx 4rpx; overflow: hidden;
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2rpx; }
+.cal-cell { min-height: 136rpx; border-radius: 16rpx; padding: 6rpx 0; overflow: hidden;
   display: flex; flex-direction: column; align-items: stretch; box-sizing: border-box;
   border: 2rpx solid transparent; }
 .cal-cell.dim .cal-num { color: #C3C7DA; }
@@ -637,10 +636,10 @@ onShow(load)
 .cal-num { font-size: 26rpx; font-weight: 700; color: #4A4F6B; text-align: center; line-height: 32rpx; }
 .cal-cell.today .cal-num { color: #8B7FE8; font-weight: 800; }
 .cal-tags { display: flex; flex-direction: column; gap: 3rpx; margin-top: 2rpx; min-width: 0; }
-.cal-tag { display: flex; align-items: center; gap: 4rpx; border-radius: 6rpx;
-  padding: 2rpx 5rpx; overflow: hidden; max-width: 100%; box-sizing: border-box; }
+.cal-tag { display: flex; align-items: center; border-radius: 8rpx;
+  padding: 2rpx 2rpx; overflow: hidden; max-width: 100%; box-sizing: border-box; }
 .tag-dot { width: 7rpx; height: 7rpx; border-radius: 4rpx; flex-shrink: 0; }
-.tag-text { flex: 1; min-width: 0; font-size: 20rpx; color: #333850; overflow: hidden;
+.tag-text { flex: 1; min-width: 0; font-size: 18rpx; color: #333850; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
 .cal-more { font-size: 20rpx; color: #6F748C; padding-left: 4rpx; }
 
