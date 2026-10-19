@@ -7,17 +7,27 @@ const editId = ref(null)
 const title = ref('')
 const content = ref('')
 const noteType = ref('note')
+const priority = ref('medium')
+const pinned = ref(false)
 const dueDate = ref('')
 const dueTime = ref('09:00')
 const saving = ref(false)
 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
   .toISOString().slice(0, 10)
 
+const PRIORITIES = [
+  { key: 'high', label: '高' },
+  { key: 'medium', label: '中' },
+  { key: 'low', label: '低' },
+]
+
 async function loadNote(id) {
   const n = await apiNote(id)
   title.value = n.title
   content.value = n.content
   noteType.value = n.note_type
+  priority.value = n.priority || 'medium'
+  pinned.value = !!n.pinned
   if (n.due_at) {
     dueDate.value = String(n.due_at).slice(0, 10)
     dueTime.value = String(n.due_at).slice(11, 16) || '09:00'
@@ -39,11 +49,12 @@ async function save() {
     note_type: noteType.value,
     status: 'open',
     due_at: dueAt,
+    priority: priority.value,
+    pinned: pinned.value,
   }
   saving.value = true
   try {
     if (editId.value) {
-      // 保留原状态：先读后写
       const old = await apiNote(editId.value)
       payload.status = old.status
       await apiUpdateNote(editId.value, payload)
@@ -73,7 +84,7 @@ function removeIt() {
 onLoad(async (options) => {
   if (options && options.id) {
     editId.value = Number(options.id)
-    uni.setNavigationBarTitle({ title: '编辑便签' })
+    uni.setNavigationBarTitle({ title: '编辑' })
     await loadNote(editId.value)
   }
 })
@@ -84,11 +95,11 @@ onLoad(async (options) => {
     <view class="card">
       <view class="type-switch">
         <text :class="['type-btn', noteType === 'note' && 'type-note']" @click="switchType('note')">普通便签</text>
-        <text :class="['type-btn', noteType === 'todo' && 'type-todo']" @click="switchType('todo')">待办事项</text>
+        <text :class="['type-btn', noteType === 'todo' && 'type-todo']" @click="switchType('todo')">待办任务</text>
       </view>
 
       <text class="field-label">标题</text>
-      <input class="input" v-model="title" placeholder="例如：周五交房租" placeholder-class="ph" />
+      <input class="input" v-model="title" placeholder="例如：交课程设计报告" placeholder-class="ph" />
 
       <text class="field-label">内容</text>
       <textarea class="ta" v-model="content" placeholder="选填" placeholder-class="ph" />
@@ -103,14 +114,31 @@ onLoad(async (options) => {
             <view class="picker-value">{{ dueTime }} ▾</view>
           </picker>
         </view>
+
+        <text class="field-label">优先级</text>
+        <view class="pri-row">
+          <text v-for="p in PRIORITIES" :key="p.key"
+            :class="['pri-item', `pri-${p.key}`, priority === p.key && 'pri-active']"
+            @click="priority = p.key">
+            {{ p.label }}{{ priority === p.key ? ' ✓' : '' }}
+          </text>
+        </view>
       </block>
+
+      <view class="pin-row">
+        <view class="pin-main">
+          <text class="pin-title">置顶显示</text>
+          <text class="pin-sub">置顶的任务会排在最前面</text>
+        </view>
+        <switch :checked="pinned" color="#2f6fed" @change="e => pinned = e.detail.value" />
+      </view>
     </view>
 
     <view class="actions">
       <button class="btn btn-primary" :class="{ 'btn-disabled': saving }" :disabled="saving" @click="save">
-        {{ saving ? '保存中…' : (editId ? '保存修改' : '保存便签') }}
+        {{ saving ? '保存中…' : (editId ? '保存修改' : '保存') }}
       </button>
-      <button class="btn btn-danger" v-if="editId" @click="removeIt">删除便签</button>
+      <button class="btn btn-danger" v-if="editId" @click="removeIt">删除</button>
     </view>
   </view>
 </template>
@@ -125,11 +153,22 @@ onLoad(async (options) => {
 
 .field-label { display: block; font-size: 26rpx; color: #4a5568; margin: 30rpx 0 16rpx; }
 .ph { color: #b6bdcc; }
-.ta { width: 100%; min-height: 200rpx; background: #f5f7fb; border-radius: 16rpx;
+.ta { width: 100%; min-height: 180rpx; background: #f5f7fb; border-radius: 16rpx;
   padding: 24rpx; font-size: 28rpx; box-sizing: border-box; }
 .due-row { display: flex; gap: 20rpx; }
 .picker-value { height: 88rpx; background: #f5f7fb; border-radius: 16rpx;
   display: flex; align-items: center; justify-content: center; padding: 0 30rpx; font-size: 28rpx; }
+
+.pri-row { display: flex; gap: 18rpx; }
+.pri-item { flex: 1; text-align: center; padding: 18rpx 0; border-radius: 16rpx;
+  font-size: 28rpx; background: #f5f7fb; color: #7c8595; font-weight: 600; }
+.pri-high.pri-active { background: #fdecec; color: #e5484d; }
+.pri-medium.pri-active { background: #fdf6ec; color: #f59f0b; }
+.pri-low.pri-active { background: #f2f4f8; color: #5b6473; }
+
+.pin-row { display: flex; justify-content: space-between; align-items: center; margin-top: 34rpx; }
+.pin-title { display: block; font-size: 28rpx; font-weight: 600; }
+.pin-sub { display: block; font-size: 22rpx; color: #9aa3b5; margin-top: 6rpx; }
 
 .actions { margin: 30rpx 24rpx; display: flex; flex-direction: column; gap: 20rpx; }
 </style>

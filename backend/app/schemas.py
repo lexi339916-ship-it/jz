@@ -92,6 +92,8 @@ class NoteIn(BaseModel):
     note_type: Literal["note", "todo"] = "note"
     status: Literal["open", "done"] = "open"
     due_at: datetime | None = None
+    priority: Literal["high", "medium", "low"] = "medium"
+    pinned: bool = False
 
 
 class NoteOut(BaseModel):
@@ -102,6 +104,9 @@ class NoteOut(BaseModel):
     note_type: str
     status: str
     due_at: datetime | None
+    priority: str
+    pinned: bool
+    is_overdue: bool
     created_at: datetime
     updated_at: datetime
 
@@ -157,6 +162,61 @@ class CategoryStatsOut(BaseModel):
     items: list[CategoryStatItem]
 
 
+class ProfileStatsOut(BaseModel):
+    """个人中心统计卡片数据。"""
+    total_bills: int
+    total_days: int
+    total_notes: int
+    pending_todos: int
+
+
+# ---------- 储蓄目标 ----------
+
+class GoalIn(BaseModel):
+    name: str = Field(min_length=1, max_length=50)
+    target_amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
+
+
+class GoalDepositIn(BaseModel):
+    amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
+
+
+class GoalOut(BaseModel):
+    id: int
+    name: str
+    target_amount: Decimal
+    saved_amount: Decimal
+    remaining: Decimal
+    progress_ratio: float          # 0~1（可超 1）
+    estimated_finish: str | None    # 按近 3 个月平均月结余估算
+    avg_monthly_net: Decimal
+
+
+# ---------- 生活挑战 ----------
+
+class ChallengeIn(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
+    category: str = Field(min_length=1, max_length=40)
+    period_days: Literal[7, 30] = 7
+    target_amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
+
+
+class ChallengeOut(BaseModel):
+    id: int
+    name: str
+    category: str
+    period_days: int
+    target_amount: Decimal
+    start_date: date
+    end_date: date
+    current_spend: Decimal
+    previous_spend: Decimal | None   # 上一个同长度周期的支出
+    change_pct: float | None         # 环比变化百分比
+    progress_ratio: float            # 当前已花 / 上限
+    status: str                      # on_track / over / finished / failed
+    days_left: int
+
+
 # ---------- AI ----------
 
 class ParseBillIn(BaseModel):
@@ -190,11 +250,12 @@ class NoteDraft(BaseModel):
     content: str = ""
     note_type: Literal["note", "todo"] = "note"
     due_at: datetime | None = None
+    priority: Literal["high", "medium", "low"] = "medium"
     missing_fields: list[str] = Field(default_factory=list)
 
 
 class ParseNoteOut(BaseModel):
-    draft: NoteDraft
+    drafts: list[NoteDraft]
     notice: str = ""
     prompt_version: str
     model: str

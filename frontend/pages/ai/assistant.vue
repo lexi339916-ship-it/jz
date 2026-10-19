@@ -15,8 +15,8 @@ const savingIndex = ref(-1)
 const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
   .toISOString().slice(0, 10)
 
-// 月度总结
-const summaryMonth = ref('')
+// 月度/周度总结
+const summaryPeriod = ref('month')   // month / week
 const summaryData = ref(null)
 const summaryLoading = ref(false)
 
@@ -25,13 +25,21 @@ const askText = ref('')
 const askLoading = ref(false)
 const askError = ref(null)
 const askResult = ref(null)
-const askExamples = ['本月餐饮花了多少？', '本月收支情况怎么样？', '最大的支出是什么？']
+const askExamples = [
+  '这个月钱主要花在哪里？',
+  '和上个月相比餐饮增加了多少？',
+  '帮我制定下个月预算',
+  '每天少花15元能省多少？',
+]
 
 const TOOL_LABELS = {
   monthly_summary: '月度收支汇总',
   category_summary: '分类花费查询',
   top_categories: '支出分类排行',
   largest_bill: '最大支出查询',
+  category_compare: '分类环比对比',
+  budget_suggestion: '预算建议数据',
+  savings_calc: '储蓄计算',
 }
 
 function toolLabel(tool) {
@@ -54,6 +62,21 @@ function dataSummary(res) {
     return d.found
       ? `${d.category} ¥${d.amount}（${d.bill_date}${d.remark ? ' · ' + d.remark : ''}）`
       : '该月没有支出记录'
+  }
+  if (res.tool === 'category_compare') {
+    if (d.found === false) return '没有找到该分类'
+    const pctText = d.change_pct === null ? '上月无记录' :
+      `${d.change_pct > 0 ? '+' : ''}${d.change_pct}%`
+    return `${d.category}：本月 ¥${d.current_amount} vs 上月 ¥${d.previous_amount}（${pctText}，差额 ¥${d.diff}）`
+  }
+  if (res.tool === 'budget_suggestion') {
+    const items = d.items || []
+    return `近 ${d.months} 个月月均：` +
+      items.map(i => `${i.category} ¥${i.monthly_avg}`).join(' · ') +
+      ` · 合计 ¥${d.total_monthly_avg}`
+  }
+  if (res.tool === 'savings_calc') {
+    return `每天 ¥${d.daily_amount} → 每月省 ¥${d.monthly_saving} · 每年 ¥${d.yearly_saving}（${d.basis}）`
   }
   return ''
 }
@@ -112,7 +135,7 @@ async function parse() {
     const res = mode.value === 'bill' ? await apiParseBill(input) : await apiParseNote(input)
     result.value = mode.value === 'bill'
       ? { drafts: res.drafts }
-      : { draft: res.draft }
+      : { drafts: res.drafts }
     notice.value = res.notice || ''
     meta.value = { prompt_version: res.prompt_version, model: res.model, latency_ms: res.latency_ms }
     if (res.notice) {
@@ -133,7 +156,7 @@ function setDraftDate(draft) { draft.bill_date = draft.bill_date || today }
 function setDraftCategory(draft) { if (!draft.category) draft.category = '其他' }
 
 const missingText = (fields) => {
-  const map = { amount: '金额', bill_date: '日期', category: '分类', title: '标题' }
+  const map = { amount: '金额', bill_date: '日期', category: '分类', title: '标题', due_at: '时间' }
   return fields.map(f => map[f] || f).join('、')
 }
 
@@ -159,26 +182,30 @@ async function confirmDraft(index) {
   } catch (e) { /* 统一提示 */ } finally { savingIndex.value = -1 }
 }
 
-async function confirmNote() {
-  const d = result.value.draft
-  if (!d.title) { uni.showToast({ title: '请补全标题', icon: 'none' }); return }
+async function confirmNote(index) {
+  const d = result.value.drafts[index]
+  if (!d.title || !d.title.trim()) { uni.showToast({ title: '请补全标题', icon: 'none' }); return }
+  savingIndex.value = index
   try {
     await apiAddNote({
-      title: d.title,
-      content: d.content,
+      title: d.title.trim(),
+      content: d.content || '',
       note_type: d.note_type,
       status: 'open',
-      due_at: d.due_at,
+      due_at: d.note_type === 'todo' ? d.due_at : null,
+      priority: d.priority || 'medium',
+      pinned: false,
     })
-    uni.showToast({ title: '已保存便签', icon: 'success' })
-    reset()
-  } catch (e) { /* 统一提示 */ }
+    uni.showToast({ title: '已保存任务', icon: 'success' })
+    result.value.drafts.splice(index, 1)
+    if (!result.value.drafts.length) reset()
+  } catch (e) { /* 统一提示 */ } finally { savingIndex.value = -1 }
 }
 
 async function genSummary() {
   summaryLoading.value = true
   try {
-    summaryData.value = await apiSummary(summaryMonth.value)
+    summaryData.value = await apiSummary(summaryPeriod.value)
   } catch (e) {
     if (e.status !== 503 && e.status !== 429) {
       uni.showToast({ title: e.message || '生成失败，请重试', icon: 'none' })
@@ -199,7 +226,6 @@ function reset() {
 function goManual() { uni.navigateTo({ url: '/pages/bills/edit' }) }
 
 onShow(() => {
-  if (!summaryMonth.value) summaryMonth.value = currentMonth()
   if (!categories.value.length) loadCategories()
 })
 </script>
@@ -274,27 +300,39 @@ onShow(() => {
         </view>
       </view>
 
-      <!-- AI 草稿（便签） -->
-      <view v-if="mode === 'note' && result && result.draft">
-        <view class="ai-badge">AI 生成草稿 · 请核对后保存</view>
-        <view class="draft">
-          <input class="d-remark" v-model="result.draft.title" placeholder="标题（可编辑）" placeholder-class="ph" />
-          <textarea class="ta d-content" v-model="result.draft.content" placeholder="内容（可编辑）" />
+      <!-- AI 草稿（便签/任务，多条目） -->
+      <view v-if="mode === 'note' && result && result.drafts">
+        <view class="ai-badge">AI 生成任务草稿 · 请逐条核对后保存</view>
+        <view v-if="!result.drafts.length" class="empty">未识别到任务内容，换个说法试试</view>
+        <view class="draft" v-for="(d, i) in result.drafts" :key="i">
+          <input class="d-remark" v-model="d.title" placeholder="标题（可编辑）" placeholder-class="ph" />
+          <textarea class="ta d-content" v-model="d.content" placeholder="内容（可编辑）" />
           <view class="draft-row">
-            <text :class="['d-type', result.draft.note_type === 'todo' && 'd-todo']"
-              @click="result.draft.note_type = result.draft.note_type === 'todo' ? 'note' : 'todo'">
-              {{ result.draft.note_type === 'todo' ? '待办' : '便签' }}
+            <text :class="['d-type', d.note_type === 'todo' && 'd-todo']"
+              @click="d.note_type = d.note_type === 'todo' ? 'note' : 'todo'">
+              {{ d.note_type === 'todo' ? '待办' : '便签' }}
             </text>
-            <picker mode="date" :value="(result.draft.due_at || '').slice(0, 10) || today"
-              @change="result.draft.due_at = $event.detail.value + ' 09:00:00'"
-              v-if="result.draft.note_type === 'todo'">
-              <text class="d-field">截止：{{ (result.draft.due_at || '').slice(0, 10) || '选日期' }} ▾</text>
+            <picker v-if="d.note_type === 'todo'" mode="date"
+              :value="(d.due_at || '').slice(0, 10) || today"
+              @change="d.due_at = $event.detail.value + ' 18:00:00'">
+              <text class="d-field">截止：{{ (d.due_at || '').slice(0, 10) || '选日期' }} ▾</text>
             </picker>
           </view>
-          <view class="missing" v-if="result.draft.missing_fields && result.draft.missing_fields.length">
-            ⚠ 待补充：{{ missingText(result.draft.missing_fields) }}
+          <view class="pri-chips" v-if="d.note_type === 'todo'">
+            <text v-for="p in ['high', 'medium', 'low']" :key="p"
+              :class="['pri-chip', 'chip-' + p, d.priority === p && 'chip-active']"
+              @click="d.priority = p">
+              {{ { high: '高', medium: '中', low: '低' }[p] }}
+            </text>
           </view>
-          <button class="btn btn-primary draft-save" @click="confirmNote">确认保存便签</button>
+          <view class="missing" v-if="d.missing_fields && d.missing_fields.length">
+            ⚠ 待补充：{{ missingText(d.missing_fields) }}
+          </view>
+          <button class="btn btn-primary draft-save"
+            :class="{ 'btn-disabled': savingIndex === i }" :disabled="savingIndex === i"
+            @click="confirmNote(i)">
+            {{ savingIndex === i ? '保存中…' : '确认保存该任务' }}
+          </button>
         </view>
       </view>
 
@@ -344,10 +382,15 @@ onShow(() => {
     <!-- ===== 月度总结模式 ===== -->
     <view class="card" v-else>
       <view class="sum-head">
-        <text class="sum-month">{{ summaryMonth }}</text>
+        <view class="period-tabs">
+          <text :class="['p-tab', summaryPeriod === 'week' && 'p-active']"
+            @click="summaryPeriod = 'week'; summaryData = null">本周</text>
+          <text :class="['p-tab', summaryPeriod === 'month' && 'p-active']"
+            @click="summaryPeriod = 'month'; summaryData = null">本月</text>
+        </view>
         <button class="btn btn-primary sum-btn" :class="{ 'btn-disabled': summaryLoading }"
           :disabled="summaryLoading" @click="genSummary">
-          {{ summaryLoading ? '生成中…' : '生成本月分析' }}
+          {{ summaryLoading ? '生成中…' : '生成分析' }}
         </button>
       </view>
       <view class="state-box" v-if="summaryData && summaryData.error">
@@ -358,6 +401,7 @@ onShow(() => {
         </view>
       </view>
       <view v-if="summaryData && !summaryData.error">
+        <text class="sum-month">{{ summaryData.month }}</text>
         <view class="sum-nums">
           <text class="sum-item">收入 ¥{{ Number(summaryData.income).toFixed(2) }}</text>
           <text class="sum-item">支出 ¥{{ Number(summaryData.expense).toFixed(2) }}</text>
@@ -367,7 +411,9 @@ onShow(() => {
         <text class="sum-text">{{ summaryData.summary }}</text>
         <text class="meta" v-if="summaryData.model">模型 {{ summaryData.model }}</text>
       </view>
-      <view v-if="!summaryData" class="empty">点击上方按钮，AI 将基于本月的真实账单数据生成分析</view>
+      <view v-if="!summaryData" class="empty">
+        点击上方按钮，AI 将基于{{ summaryPeriod === 'week' ? '本周' : '本月' }}的真实账单数据生成分析
+      </view>
     </view>
   </view>
 </template>
@@ -407,11 +453,22 @@ onShow(() => {
 .missing { font-size: 23rpx; color: #d97706; background: #fdf6ec; border-radius: 10rpx; padding: 12rpx 18rpx; margin-bottom: 18rpx; }
 .draft-save { margin-top: 6rpx; height: 78rpx; font-size: 27rpx; }
 
+/* 任务草稿的优先级选择 */
+.pri-chips { display: flex; gap: 14rpx; margin-bottom: 18rpx; }
+.pri-chip { font-size: 24rpx; padding: 8rpx 30rpx; border-radius: 24rpx;
+  background: #fff; color: #7c8595; border: 2rpx solid #e8edf5; }
+.chip-high.chip-active { background: #fdecec; color: #e5484d; border-color: #f5b8b8; font-weight: 700; }
+.chip-medium.chip-active { background: #fdf6ec; color: #f59f0b; border-color: #f5d9a8; font-weight: 700; }
+.chip-low.chip-active { background: #f2f4f8; color: #5b6473; border-color: #cfd6e2; font-weight: 700; }
+
 .meta { font-size: 21rpx; color: #9aa3b5; margin-top: 20rpx; }
 
 .sum-head { display: flex; align-items: center; justify-content: space-between; }
-.sum-month { font-size: 32rpx; font-weight: 700; }
-.sum-btn { margin: 0; width: 300rpx; height: 76rpx; font-size: 26rpx; }
+.sum-month { display: block; font-size: 26rpx; font-weight: 700; color: #4a5568; margin-top: 22rpx; }
+.sum-btn { margin: 0; width: 260rpx; height: 76rpx; font-size: 26rpx; }
+.period-tabs { display: flex; background: #f5f7fb; border-radius: 16rpx; padding: 6rpx; }
+.p-tab { font-size: 25rpx; color: #7c8595; padding: 12rpx 30rpx; border-radius: 12rpx; }
+.p-active { background: #2f6fed; color: #fff; font-weight: 600; }
 .sum-nums { display: flex; gap: 26rpx; margin: 26rpx 0; flex-wrap: wrap; }
 .sum-item { font-size: 24rpx; color: #4a5568; background: #f5f7fb; border-radius: 12rpx; padding: 12rpx 20rpx; }
 .sum-text { display: block; font-size: 27rpx; line-height: 1.8; color: #263246; margin-top: 14rpx; }

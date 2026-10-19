@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS bills (
   CONSTRAINT fk_bill_category FOREIGN KEY (category_id) REFERENCES bill_categories(id)
 ) ENGINE=InnoDB;
 
--- 便签与待办表：note_type 区分普通便签/待办，status 记录待办完成状态
+-- 便签与任务表：note_type 区分便签/待办；priority 优先级；pinned 置顶；due_at 截止时间
 CREATE TABLE IF NOT EXISTS notes (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   user_id BIGINT NOT NULL,
@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS notes (
   note_type ENUM('note','todo') NOT NULL DEFAULT 'note',
   status ENUM('open','done') NOT NULL DEFAULT 'open',
   due_at DATETIME NULL,
+  priority VARCHAR(10) NOT NULL DEFAULT 'medium',
+  pinned TINYINT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_note_user_status (user_id, status),
@@ -80,6 +82,33 @@ CREATE TABLE IF NOT EXISTS ai_call_logs (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_ai_log_user_date (user_id, created_at),
   CONSTRAINT fk_ai_log_user FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB;
+
+-- 储蓄目标表：目标金额与已存入金额；预计完成时间由后端按月均结余计算
+CREATE TABLE IF NOT EXISTS savings_goals (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  name VARCHAR(50) NOT NULL,
+  target_amount DECIMAL(12,2) NOT NULL,
+  saved_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_goal_user FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB;
+
+-- 生活挑战表：周期内某分类支出不超过上限；进度与上期对比由后端统计
+CREATE TABLE IF NOT EXISTS challenges (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  name VARCHAR(60) NOT NULL,
+  category_id BIGINT NULL,
+  period_days INT NOT NULL DEFAULT 7,
+  target_amount DECIMAL(12,2) NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_challenge_user FOREIGN KEY (user_id) REFERENCES users(id),
+  CONSTRAINT fk_challenge_category FOREIGN KEY (category_id) REFERENCES bill_categories(id)
 ) ENGINE=InnoDB;
 
 -- 系统预置分类（与后端 app/main.py 的 DEFAULT_CATEGORIES 一致）

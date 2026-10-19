@@ -3,12 +3,13 @@
 安全设计：草稿不直接落库，必须由用户确认后走 /api/bills 保存；
 每次调用限流并写日志；输出经结构校验与脱敏。
 """
+import re
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import extract, func, select
+from sqlalchemy import extract, func, or_, select
 from sqlalchemy.orm import Session
 
 from app import config
@@ -141,6 +142,57 @@ async def parse_bill(req: ParseBillIn, user: User = Depends(get_current_user),
         raise exc
 
 
+def _coerce_due_at(value) -> datetime | None:
+    """容错解析模型返回的截止时间：ISO 格式或"X月X日 HH:MM"等写法。"""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(text[:19], fmt)
+        except ValueError:
+            continue
+    # 兼容 "10月23日 18:00" / "10月23日" 写法（补当前年份）
+    m = re.match(r"^(\d{1,2})月(\d{1,2})日(?:\s*(\d{1,2}):(\d{2}))?$", text)
+    if m:
+        month, day = int(m.group(1)), int(m.group(2))
+        hour, minute = int(m.group(3) or 18), int(m.group(4) or 0)
+        year = date.today().year
+        try:
+            result = datetime(year, month, day, hour, minute)
+        except ValueError:
+            return None
+        # 明显早于今天半年以上，按明年处理（如跨年输入"1月5日"）
+        if (date.today() - result.date()).days > 180:
+            result = result.replace(year=year + 1)
+        return result
+    return None
+
+
+def _validate_note_drafts(data: dict) -> tuple[list[NoteDraft], str]:
+    """把模型 JSON 转成受控任务草稿：多任务拆分、时间解析、优先级白名单、备注脱敏。"""
+    raw_items = data.get("items")
+    if not isinstance(raw_items, list):
+        raise AIServiceError(502, "AI 返回缺少 items 数组，请重试。", kind="format")
+
+    drafts: list[NoteDraft] = []
+    for item in raw_items[:10]:  # 上限 10 条，防止异常输出
+        if not isinstance(item, dict):
+            continue
+        title = str(item.get("title") or "").strip()[:100]
+        if not title:
+            continue  # 无标题的条目没有保存价值
+        missing = [f for f in item.get("missing_fields", []) if isinstance(f, str)][:5]
+        drafts.append(NoteDraft(
+            title=title,
+            content=mask_sensitive(str(item.get("content") or "")[:2000]),
+            note_type=item.get("note_type") if item.get("note_type") in ("note", "todo") else "note",
+            due_at=_coerce_due_at(item.get("due_at")),
+            priority=item.get("priority") if item.get("priority") in ("high", "medium", "low") else "medium",
+            missing_fields=missing))
+    return drafts, str(data.get("notice") or "")[:200]
+
+
 @router.post("/parse-note", response_model=ParseNoteOut)
 async def parse_note(req: ParseNoteIn, user: User = Depends(get_current_user),
                      db: Session = Depends(get_db)):
@@ -151,35 +203,15 @@ async def parse_note(req: ParseNoteIn, user: User = Depends(get_current_user),
     retry_hint = (
         "你的上一次输出不是合法 JSON。请严格按照用户最后一次输入的文本重新输出："
         '只允许一个 JSON 对象，不要任何解释或 Markdown；禁止照抄示例内容；'
-        '如果与便签无关，必须返回 {"title": "", "content": "", "note_type": "note", '
-        '"due_at": null, "missing_fields": [], "notice": "未识别到便签内容"}。')
+        '如果与便签无关，必须返回 {"items": [], "notice": "未识别到便签内容"}。')
     start = time.monotonic()
     try:
         data = await ai_service.chat_json(messages, retry_hint=retry_hint)
-        draft_data = data if "title" in data or "content" in data else {}
-        if not draft_data:
-            raise AIServiceError(502, "AI 未返回便签草稿，请重试或手动创建。", kind="format")
-        due_at = None
-        raw_due = draft_data.get("due_at")
-        if isinstance(raw_due, str) and raw_due.strip():
-            for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d"):
-                try:
-                    due_at = datetime.strptime(raw_due.strip()[:16], fmt)
-                    break
-                except ValueError:
-                    continue
-        missing = [f for f in draft_data.get("missing_fields", []) if isinstance(f, str)][:5]
-        if not draft_data.get("title"):
-            missing = ["title"] + [m for m in missing if m != "title"]
-        draft = NoteDraft(
-            title=str(draft_data.get("title") or "")[:100],
-            content=mask_sensitive(str(draft_data.get("content") or "")[:2000]),
-            note_type=draft_data.get("note_type") if draft_data.get("note_type") in ("note", "todo") else "note",
-            due_at=due_at, missing_fields=missing)
+        drafts, notice = _validate_note_drafts(data)
         latency = int((time.monotonic() - start) * 1000)
         log_call(db, user_id=user.id, feature="parse_note", status="success",
                  latency_ms=latency, input_chars=len(req.text))
-        return ParseNoteOut(draft=draft, notice=str(data.get("notice") or "")[:200],
+        return ParseNoteOut(drafts=drafts, notice=notice,
                             prompt_version=PROMPT_VERSION,
                             model=config.AI_MODEL, latency_ms=latency)
     except AIServiceError as exc:
@@ -188,31 +220,41 @@ async def parse_note(req: ParseNoteIn, user: User = Depends(get_current_user),
                  latency_ms=latency, input_chars=len(req.text), error_msg=exc.message)
         if exc.kind == "format":
             return ParseNoteOut(
-                draft=NoteDraft(), notice="未能从这段文本中整理出便签内容，请换一种说法，或手动创建。",
+                drafts=[], notice="未能从这段文本中整理出任务，请换一种说法，或手动创建。",
                 prompt_version=PROMPT_VERSION, model=config.AI_MODEL, latency_ms=latency)
         raise exc
 
 
 @router.get("/summary", response_model=SummaryOut)
-async def summary(month: str = Query(default=""),
+async def summary(month: str = Query(default=""), period: str = Query(default="month"),
                   user: User = Depends(get_current_user),
                   db: Session = Depends(get_db)):
-    """月度消费总结：数据由后端 SQL 统计，模型只负责解释，避免编造数字。"""
-    month = month or date.today().strftime("%Y-%m")
-    year, mon = int(month[:4]), int(month[5:7])
-    month_condition = [
-        Bill.user_id == user.id,
-        extract("year", Bill.bill_date) == year,
-        extract("month", Bill.bill_date) == mon,
-    ]
+    """消费总结：period=month 按月；period=week 汇总最近 7 天。数据全部由后端计算。"""
+    today = date.today()
+    if period == "week":
+        start_day = today - timedelta(days=6)
+        label = f"本周（{start_day.month}月{start_day.day}日~{today.month}月{today.day}日）"
+        base_condition = [Bill.user_id == user.id,
+                          Bill.bill_date >= start_day, Bill.bill_date <= today]
+        empty_hint = "本周暂无账单数据"
+    else:
+        month = month or today.strftime("%Y-%m")
+        base_condition = [
+            Bill.user_id == user.id,
+            extract("year", Bill.bill_date) == int(month[:4]),
+            extract("month", Bill.bill_date) == int(month[5:7]),
+        ]
+        label = f"{month} 月"
+        empty_hint = f"{month} 月暂无账单数据"
+
     income = Decimal(str(db.scalar(select(func.coalesce(func.sum(Bill.amount), 0)).where(
-        *month_condition, Bill.type == "income")) or 0))
+        *base_condition, Bill.type == "income")) or 0))
     expense = Decimal(str(db.scalar(select(func.coalesce(func.sum(Bill.amount), 0)).where(
-        *month_condition, Bill.type == "expense")) or 0))
+        *base_condition, Bill.type == "expense")) or 0))
     top_rows = db.execute(
         select(BillCategory.name, func.sum(Bill.amount))
         .join(Bill, Bill.category_id == BillCategory.id)
-        .where(*month_condition, Bill.type == "expense")
+        .where(*base_condition, Bill.type == "expense")
         .group_by(BillCategory.name)
         .order_by(func.sum(Bill.amount).desc()).limit(5)).all()
     top_categories = [
@@ -222,10 +264,10 @@ async def summary(month: str = Query(default=""),
     if income == 0 and expense == 0:
         # 无数据时不调用模型，直接给出确定提示（成本控制 + 防幻觉）
         return SummaryOut(
-            month=month, income=income, expense=expense, net=income - expense,
+            month=label, income=income, expense=expense, net=income - expense,
             top_categories=top_categories,
-            summary=f"{month} 月暂无账单数据，请先记录收支后再生成分析。",
-            notice="未调用 AI：本月无数据。",
+            summary=f"{empty_hint}，请先记录收支后再生成分析。",
+            notice="未调用 AI：该时段无数据。",
             prompt_version=PROMPT_VERSION, model=config.AI_MODEL or "-")
 
     ensure_configured()
@@ -234,7 +276,7 @@ async def summary(month: str = Query(default=""),
              "net": income - expense,
              "top_categories": [{"category": c.category, "amount": c.amount}
                                 for c in top_categories]}
-    messages = build_summary_messages(month, stats)
+    messages = build_summary_messages(label, stats)
     start = time.monotonic()
     try:
         data = await ai_service.chat_json(messages, temperature=0.3)
@@ -243,16 +285,16 @@ async def summary(month: str = Query(default=""),
             raise AIServiceError(502, "AI 未返回分析内容，请重试。")
         latency = int((time.monotonic() - start) * 1000)
         log_call(db, user_id=user.id, feature="summary", status="success",
-                 latency_ms=latency, input_chars=len(month))
+                 latency_ms=latency, input_chars=len(label))
         return SummaryOut(
-            month=month, income=income, expense=expense, net=income - expense,
+            month=label, income=income, expense=expense, net=income - expense,
             top_categories=top_categories, summary=text,
             notice="分析由 AI 基于真实统计数据生成，仅供参考。",
             prompt_version=PROMPT_VERSION, model=config.AI_MODEL)
     except AIServiceError as exc:
         latency = int((time.monotonic() - start) * 1000)
         log_call(db, user_id=user.id, feature="summary", status="error",
-                 latency_ms=latency, input_chars=len(month), error_msg=exc.message)
+                 latency_ms=latency, input_chars=len(label), error_msg=exc.message)
         raise exc
 
 
@@ -347,7 +389,8 @@ async def insight(refresh: bool = False, user: User = Depends(get_current_user),
 
 # ---------------- 问账本（工具调用） ----------------
 
-_ASK_TOOLS = {"monthly_summary", "category_summary", "top_categories", "largest_bill"}
+_ASK_TOOLS = {"monthly_summary", "category_summary", "top_categories", "largest_bill",
+              "category_compare", "budget_suggestion", "savings_calc"}
 
 
 def _execute_ask_tool(db: Session, user: User, tool: str, params: dict) -> dict:
@@ -399,6 +442,69 @@ def _execute_ask_tool(db: Session, user: User, tool: str, params: dict) -> dict:
         return {"month": month, "found": True, "amount": str(row.amount),
                 "category": cat.name if cat else "未分类",
                 "bill_date": row.bill_date.isoformat(), "remark": row.remark}
+    if tool == "category_compare":
+        name = str(params.get("category") or "").strip()
+        cat = db.scalar(select(BillCategory).where(
+            BillCategory.name == name,
+            (BillCategory.user_id.is_(None)) | (BillCategory.user_id == user.id)).limit(1))
+        if cat is None:
+            return {"category": name, "found": False, "message": "分类不存在"}
+        this_month = date.today().strftime("%Y-%m")
+        last_month = _shift_month(this_month, -1)
+
+        def month_sum(m: str) -> Decimal:
+            return Decimal(str(db.scalar(
+                select(func.coalesce(func.sum(Bill.amount), 0)).where(
+                    Bill.user_id == user.id, Bill.category_id == cat.id,
+                    extract("year", Bill.bill_date) == int(m[:4]),
+                    extract("month", Bill.bill_date) == int(m[5:7]))) or 0))
+
+        cur, prev = month_sum(this_month), month_sum(last_month)
+        diff = cur - prev
+        pct = round(float(diff / prev * 100), 1) if prev > 0 else None
+        return {"category": name, "current_month": this_month,
+                "current_amount": str(cur.quantize(Decimal("0.01"))),
+                "previous_month": last_month,
+                "previous_amount": str(prev.quantize(Decimal("0.01"))),
+                "diff": str(diff.quantize(Decimal("0.01"))), "change_pct": pct}
+    if tool == "budget_suggestion":
+        try:
+            months_n = max(1, min(int(params.get("months") or 3), 6))
+        except (TypeError, ValueError):
+            months_n = 3
+        today = date.today()
+        month_list = [_shift_month(today.strftime("%Y-%m"), -i) for i in range(months_n)]
+        # 每月条件为 (year == y and month == m)，多月之间取 or
+        month_conditions = [
+            (extract("year", Bill.bill_date) == int(m[:4]))
+            & (extract("month", Bill.bill_date) == int(m[5:7]))
+            for m in month_list]
+        rows = db.execute(
+            select(BillCategory.name, func.sum(Bill.amount))
+            .join(Bill, Bill.category_id == BillCategory.id)
+            .where(Bill.user_id == user.id, Bill.type == "expense",
+                   or_(*month_conditions))
+            .group_by(BillCategory.name)).all()
+        items = [{
+            "category": name,
+            "total": str(Decimal(str(total)).quantize(Decimal("0.01"))),
+            "monthly_avg": str((Decimal(str(total)) / months_n).quantize(Decimal("0.01"))),
+        } for name, total in rows]
+        items.sort(key=lambda x: float(x["monthly_avg"]), reverse=True)
+        total_avg = sum((Decimal(i["monthly_avg"]) for i in items), Decimal("0"))
+        return {"months": months_n, "items": items,
+                "total_monthly_avg": str(total_avg.quantize(Decimal("0.01")))}
+    if tool == "savings_calc":
+        try:
+            daily = Decimal(str(params.get("daily_amount") or 0))
+        except Exception:
+            daily = Decimal("0")
+        if daily <= 0:
+            return {"error": "daily_amount 无效"}
+        return {"daily_amount": str(daily),
+                "monthly_saving": str((daily * 30).quantize(Decimal("0.01"))),
+                "yearly_saving": str((daily * 365).quantize(Decimal("0.01"))),
+                "basis": "按每月30天估算"}
     return {"error": "不支持的工具"}
 
 

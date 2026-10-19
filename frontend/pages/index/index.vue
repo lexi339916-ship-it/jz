@@ -11,6 +11,7 @@ const budget = ref(null)
 const recentBills = ref([])
 const todos = ref([])
 const pendingCount = ref(0)
+const todayDueCount = ref(0)   // 今天到期 + 已逾期数量
 
 // AI 洞察卡状态
 const insightText = ref('')
@@ -65,17 +66,19 @@ async function loadInsight(refresh = false) {
 async function loadAll() {
   if (!store.token) return
   try {
-    const [s, b, bills, notes] = await Promise.all([
+    const [s, b, bills, notes, todayNotes] = await Promise.all([
       apiMonthlyStats(month.value),
       apiBudget(month.value).catch(() => null),
       apiBills({ month: month.value, page: 1, page_size: 5 }),
       apiNotes({ note_type: 'todo', status: 'open', page: 1, page_size: 3 }),
+      apiNotes({ view: 'today', page: 1, page_size: 1 }),
     ])
     stats.value = s
     budget.value = b
     recentBills.value = bills.items
     todos.value = notes.items
     pendingCount.value = notes.total
+    todayDueCount.value = todayNotes.total
   } catch (e) { /* 统一提示已处理 */ }
 }
 
@@ -200,6 +203,9 @@ onPullDownRefresh(() => {
         待办事项（{{ pendingCount }}）
         <text class="section-more" @click="uni.switchTab({ url: '/pages/notes/list' })">全部 ›</text>
       </view>
+      <view v-if="todayDueCount > 0" class="overdue-tip" @click="uni.switchTab({ url: '/pages/notes/list' })">
+        ⏰ 今天/已逾期 <text class="overdue-num">{{ todayDueCount }}</text> 项，记得处理
+      </view>
       <view v-if="todos.length === 0" class="empty">暂无待办，安排得井井有条</view>
       <view class="todo-row" v-for="n in todos" :key="n.id">
         <view class="todo-dot" />
@@ -283,6 +289,9 @@ onPullDownRefresh(() => {
 .amount-in { color: #16b07a; } .amount-out { color: #263246; }
 
 /* 待办 */
+.overdue-tip { margin: 4rpx 0 14rpx; background: #fdf2f2; color: #c53030; border-radius: 14rpx;
+  padding: 16rpx 22rpx; font-size: 24rpx; }
+.overdue-num { font-weight: 800; }
 .todo-row { display: flex; align-items: center; gap: 16rpx; padding: 20rpx 4rpx; border-bottom: 1rpx solid #f0f2f6; }
 .todo-row:last-child { border-bottom: none; }
 .todo-dot { width: 16rpx; height: 16rpx; border-radius: 8rpx; background: #f59f0b; flex-shrink: 0; }

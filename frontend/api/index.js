@@ -29,13 +29,25 @@ export const apiDeleteNote = (id) => http.delete(`/api/notes/${id}`)
 export const apiBudget = (month) => http.get('/api/budgets', { month })
 export const apiSetBudget = (data) => http.put('/api/budgets', data)
 
+// ---- 储蓄目标 ----
+export const apiGoals = () => http.get('/api/goals')
+export const apiAddGoal = (data) => http.post('/api/goals', data)
+export const apiDepositGoal = (id, amount) => http.post(`/api/goals/${id}/deposit`, { amount })
+export const apiDeleteGoal = (id) => http.delete(`/api/goals/${id}`)
+
+// ---- 生活挑战 ----
+export const apiChallenges = () => http.get('/api/challenges')
+export const apiAddChallenge = (data) => http.post('/api/challenges', data)
+export const apiDeleteChallenge = (id) => http.delete(`/api/challenges/${id}`)
+
 // ---- 统计 ----
 export const apiMonthlyStats = (month) => http.get('/api/statistics/monthly', { month })
 export const apiCategoryStats = (month, type) => http.get('/api/statistics/categories', { month, type })
+export const apiProfileStats = () => http.get('/api/statistics/profile')
 
 // ---- AI ----
 export const apiParseBill = (text) => http.post('/api/ai/parse-bill', { text })
 export const apiParseNote = (text) => http.post('/api/ai/parse-note', { text })
-export const apiSummary = (month) => http.get('/api/ai/summary', { month })
+export const apiSummary = (period = 'month') => http.get('/api/ai/summary', { period })
 export const apiInsight = (refresh = false) => http.get('/api/ai/insight', refresh ? { refresh: 1 } : {})
 export const apiAsk = (question) => http.post('/api/ai/ask', { question })

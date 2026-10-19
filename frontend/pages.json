@@ -9,6 +9,7 @@
     {"path": "pages/notes/list", "style": {"navigationBarTitleText": "便签"}},
     {"path": "pages/notes/edit", "style": {"navigationBarTitleText": "便签详情"}},
     {"path": "pages/statistics/statistics", "style": {"navigationBarTitleText": "统计分析"}},
+    {"path": "pages/goals/goals", "style": {"navigationBarTitleText": "目标与挑战"}},
     {"path": "pages/profile/profile", "style": {"navigationBarTitleText": "我的"}}
   ],
   "tabBar": {

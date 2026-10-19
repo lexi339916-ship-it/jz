@@ -63,6 +63,9 @@ class Note(Base):
     note_type: Mapped[str] = mapped_column(Enum("note", "todo"), nullable=False, default="note")
     status: Mapped[str] = mapped_column(Enum("open", "done"), nullable=False, default="open")
     due_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # 任务管理扩展：优先级（high/medium/low）与置顶
+    priority: Mapped[str] = mapped_column(String(10), nullable=False, default="medium")
+    pinned: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
@@ -96,3 +99,32 @@ class AICallLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
 
     __table_args__ = (Index("idx_ai_log_user_date", "user_id", "created_at"),)
+
+
+class SavingsGoal(Base):
+    """储蓄目标：目标金额 + 已存入金额；预计完成时间由后端按月均结余计算。"""
+    __tablename__ = "savings_goals"
+
+    id: Mapped[int] = mapped_column(PKType, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    target_amount: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=False)
+    saved_amount: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=datetime.now, onupdate=datetime.now)
+
+
+class Challenge(Base):
+    """生活挑战：限定周期内某分类支出不超过上限；进度由上期对比与账单统计计算。"""
+    __tablename__ = "challenges"
+
+    id: Mapped[int] = mapped_column(PKType, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    name: Mapped[str] = mapped_column(String(60), nullable=False)
+    category_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    period_days: Mapped[int] = mapped_column(Integer, nullable=False, default=7)
+    target_amount: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=False)
+    start_date: Mapped[datetime] = mapped_column(Date, nullable=False)
+    end_date: Mapped[datetime] = mapped_column(Date, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)

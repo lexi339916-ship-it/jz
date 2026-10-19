@@ -9,7 +9,9 @@ from fastapi.responses import JSONResponse
 from app import config
 from app.database import Base, engine, SessionLocal
 from app.models import BillCategory
-from app.routers import ai, auth, bills, budgets, categories, notes, statistics
+from app.routers import (
+    ai, auth, bills, budgets, categories, challenges, goals, notes, statistics,
+)
 from app.services.ai_service import AIServiceError
 
 DEFAULT_CATEGORIES = [
@@ -63,6 +65,8 @@ app.include_router(categories.router, prefix="/api/categories", tags=["分类"])
 app.include_router(bills.router, prefix="/api/bills", tags=["账单"])
 app.include_router(notes.router, prefix="/api/notes", tags=["便签"])
 app.include_router(budgets.router, prefix="/api/budgets", tags=["预算"])
+app.include_router(goals.router, prefix="/api/goals", tags=["储蓄目标"])
+app.include_router(challenges.router, prefix="/api/challenges", tags=["生活挑战"])
 app.include_router(statistics.router, prefix="/api/statistics", tags=["统计"])
 app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
 

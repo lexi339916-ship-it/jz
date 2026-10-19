@@ -149,6 +149,38 @@ check("待办标记完成", r.status_code == 200 and r.json()["status"] == "done
 r = client.delete(f"/api/notes/{note_id}", headers=H_B)
 check("跨用户删除便签(404)", r.status_code == 404)
 
+# ---------- 5b. 任务管理扩展：优先级 / 置顶 / 逾期 / 视图 ----------
+r = client.post("/api/notes", headers=H_A, json={
+    "title": "交课程设计报告", "content": "", "note_type": "todo",
+    "status": "open", "due_at": "2026-10-01 09:00:00",
+    "priority": "high", "pinned": True})
+check("创建高优先级置顶任务",
+      r.status_code == 200 and r.json()["priority"] == "high" and r.json()["pinned"] is True,
+      r.text)
+task_id = r.json()["id"]
+check("逾期任务 is_overdue=True", r.json()["is_overdue"] is True, r.text)
+
+r = client.get("/api/notes", headers=H_A)
+check("置顶任务排在首位", r.json()["items"][0]["id"] == task_id, r.text[:200])
+
+r = client.get("/api/notes", headers=H_A, params={"view": "today"})
+check("今天视图包含逾期任务", any(x["id"] == task_id for x in r.json()["items"]), r.text)
+
+r = client.post("/api/notes", headers=H_A, json={
+    "title": "下周计划", "content": "", "note_type": "todo",
+    "status": "open", "due_at": "2026-12-01 09:00:00", "priority": "low"})
+future_id = r.json()["id"]
+r = client.get("/api/notes", headers=H_A, params={"view": "upcoming"})
+check("近期视图包含未来任务", any(x["id"] == future_id for x in r.json()["items"]))
+check("近期视图不含今天/逾期任务", all(x["id"] != task_id for x in r.json()["items"]))
+
+r = client.put(f"/api/notes/{future_id}", headers=H_A, json={
+    "title": "下周计划", "content": "", "note_type": "todo",
+    "status": "done", "due_at": "2026-12-01 09:00:00", "priority": "low"})
+check("完成未来任务", r.status_code == 200 and r.json()["status"] == "done", r.text)
+r = client.get("/api/notes", headers=H_A, params={"view": "done"})
+check("已完成视图包含该任务", any(x["id"] == future_id for x in r.json()["items"]))
+
 # ---------- 6. 预算 ----------
 r = client.put("/api/budgets", headers=H_A, json={"month": "2026-10", "amount": "2000"})
 j = r.json()
@@ -218,14 +250,18 @@ check("超过每日上限返回429", r.status_code == 429, r.text)
 # 后续用例放开限额
 config.AI_DAILY_LIMIT = 50
 
-# ---------- 11. AI 便签解析 ----------
+# ---------- 11. AI 便签解析（多任务提取） ----------
 async def fake_note_chat(messages, temperature=0.0):
-    return '{"title":"周五交房租","content":"周五前转账2500元房租","note_type":"todo","due_at":"2026-10-23 18:00","missing_fields":[],"notice":""}'
+    return ('{"items":['
+            '{"title":"交课程设计报告","content":"","note_type":"todo","due_at":"2026-10-23 18:00","priority":"high","missing_fields":[]},'
+            '{"title":"去超市买生活用品","content":"","note_type":"todo","due_at":"2026-10-20 15:00","priority":"medium","missing_fields":[]}'
+            '],"notice":""}')
 
 ai_service.chat = fake_note_chat
-r = client.post("/api/ai/parse-note", headers=H_B, json={"text": "周五之前要交房租2500"})
+r = client.post("/api/ai/parse-note", headers=H_B, json={"text": "周五之前交课程设计报告，明天下午去超市买生活用品"})
 j = r.json()
-check("AI解析便签待办", r.status_code == 200 and j["draft"]["note_type"] == "todo", r.text)
+check("AI拆分多条任务(2条)", r.status_code == 200 and len(j["drafts"]) == 2, r.text)
+check("AI推断高优先级", j["drafts"][0]["priority"] == "high", r.text)
 
 # ---------- 12. AI 月度总结（无数据用户B → 不调用模型） ----------
 r = client.get("/api/ai/summary", headers=H_B, params={"month": "2026-10"})

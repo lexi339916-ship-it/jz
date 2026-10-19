@@ -8,8 +8,10 @@ from sqlalchemy import extract, func, select
 from sqlalchemy.orm import Session
 
 from app.deps import get_current_user, get_db
-from app.models import Bill, BillCategory, User
-from app.schemas import CategoryStatItem, CategoryStatsOut, DayPoint, MonthlyStatsOut
+from app.models import Bill, BillCategory, Note, User
+from app.schemas import (
+    CategoryStatItem, CategoryStatsOut, DayPoint, MonthlyStatsOut, ProfileStatsOut,
+)
 
 router = APIRouter()
 
@@ -85,3 +87,16 @@ def categories(month: str = "", type: str = "expense",
         for name, amount in rows
     ]
     return CategoryStatsOut(month=month, type=type, total=total, items=items)
+
+
+@router.get("/profile", response_model=ProfileStatsOut)
+def profile_stats(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """个人中心统计：账单条数、记账天数、便签数、未完成待办数。"""
+    total_bills = db.scalar(select(func.count()).where(Bill.user_id == user.id)) or 0
+    total_days = db.scalar(
+        select(func.count(func.distinct(Bill.bill_date))).where(Bill.user_id == user.id)) or 0
+    total_notes = db.scalar(select(func.count()).where(Note.user_id == user.id)) or 0
+    pending_todos = db.scalar(select(func.count()).where(
+        Note.user_id == user.id, Note.note_type == "todo", Note.status == "open")) or 0
+    return ProfileStatsOut(total_bills=total_bills, total_days=total_days,
+                           total_notes=total_notes, pending_todos=pending_todos)
