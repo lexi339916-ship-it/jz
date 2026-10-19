@@ -582,36 +582,33 @@ onShow(load)
 <style scoped>
 .page { padding-bottom: 260rpx; }
 
-/* 磨砂玻璃 */
+/* 不透明奶油卡片：取消磨砂玻璃，保证文字清晰 */
 .glass {
-  background: rgba(255, 253, 248, 0.62);
-  -webkit-backdrop-filter: blur(18px) saturate(120%);
-  backdrop-filter: blur(18px) saturate(120%);
-  border: 1rpx solid rgba(255, 255, 255, 0.78);
-  box-shadow: 0 12rpx 30rpx rgba(124, 139, 255, 0.12);
+  background: #FFFDF8;
+  border: 1rpx solid #E9E5F4;
+  box-shadow: 0 10rpx 26rpx rgba(124, 139, 255, 0.10);
   border-radius: 28rpx;
 }
 
-.top-bar { background: rgba(255, 253, 248, 0.72);
-  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-  padding: 22rpx 24rpx 16rpx; border-bottom: 1rpx dashed rgba(231, 227, 244, .8); }
-.main-tabs { display: flex; background: rgba(244, 241, 251, .8); border-radius: 999rpx; padding: 6rpx; margin-bottom: 18rpx; }
-.m-tab { flex: 1; text-align: center; padding: 14rpx 0; font-size: 29rpx; color: #8A90A8;
+.top-bar { background: #FFFDF8;
+  padding: 22rpx 24rpx 16rpx; border-bottom: 1rpx dashed #E9E5F4; }
+.main-tabs { display: flex; background: #F4F1FB; border-radius: 999rpx; padding: 6rpx; margin-bottom: 18rpx; }
+.m-tab { flex: 1; text-align: center; padding: 14rpx 0; font-size: 29rpx; color: #6F748C;
   border-radius: 999rpx; letter-spacing: 1rpx; }
 .m-active { background: #FFFDF8; color: #5A54B8; font-weight: 800;
   box-shadow: 0 6rpx 16rpx rgba(124, 139, 255, .16); }
 .search-box { display: flex; align-items: center; gap: 16rpx; }
-.search-input { flex: 1; height: 72rpx; background: rgba(246, 244, 251, .9); border-radius: 36rpx;
+.search-input { flex: 1; height: 72rpx; background: #F6F4FB; border-radius: 36rpx;
   padding: 0 28rpx; font-size: 28rpx; }
 .ph { color: #C3C7DA; }
 .search-btn { color: #6C7BF5; font-size: 28rpx; font-weight: 600; }
 
 /* 视图切换 */
 .view-switch { display: flex; align-items: center; gap: 12rpx; margin: 16rpx 24rpx 6rpx; flex-wrap: wrap; }
-.v-btn { font-size: 26rpx; color: #8A90A8; background: rgba(255, 253, 248, .55); border-radius: 999rpx;
+.v-btn { font-size: 26rpx; color: #6F748C; background: #FFFDF8; border-radius: 999rpx;
   padding: 8rpx 24rpx; border: 1rpx solid rgba(255,255,255,.7); }
 .v-active { background: #8B7FE8; color: #fff; font-weight: 700; }
-.v-stat { margin-left: auto; font-size: 24rpx; color: #8A90A8; }
+.v-stat { margin-left: auto; font-size: 24rpx; color: #6F748C; }
 
 /* 月历工具栏 */
 .cal-head { display: flex; align-items: center; justify-content: space-between;
@@ -628,7 +625,7 @@ onShow(load)
 /* 月历 */
 .cal-panel { margin: 0 24rpx 14rpx; padding: 18rpx 14rpx 14rpx; }
 .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 8rpx; }
-.cal-week text { text-align: center; font-size: 24rpx; color: #8A90A8; }
+.cal-week text { text-align: center; font-size: 24rpx; color: #6F748C; }
 .cal-week .wk { color: #C77BA6; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6rpx; }
 .cal-cell { min-height: 136rpx; border-radius: 16rpx; padding: 6rpx 4rpx; overflow: hidden;
@@ -643,9 +640,9 @@ onShow(load)
 .cal-tag { display: flex; align-items: center; gap: 4rpx; border-radius: 6rpx;
   padding: 2rpx 5rpx; overflow: hidden; max-width: 100%; box-sizing: border-box; }
 .tag-dot { width: 7rpx; height: 7rpx; border-radius: 4rpx; flex-shrink: 0; }
-.tag-text { flex: 1; min-width: 0; font-size: 20rpx; color: #4A4F6B; overflow: hidden;
+.tag-text { flex: 1; min-width: 0; font-size: 20rpx; color: #333850; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
-.cal-more { font-size: 20rpx; color: #8A90A8; padding-left: 4rpx; }
+.cal-more { font-size: 20rpx; color: #6F748C; padding-left: 4rpx; }
 
 /* 当日任务清单 */
 .day-tasks { margin: 0 24rpx; padding: 22rpx 22rpx 12rpx; }
@@ -653,7 +650,7 @@ onShow(load)
   padding-bottom: 14rpx; border-bottom: 1rpx dashed rgba(231, 227, 244, .9); }
 .day-head-left { display: flex; flex-direction: column; gap: 4rpx; }
 .day-date { font-size: 30rpx; font-weight: 800; color: #4A4F6B; }
-.day-count { font-size: 24rpx; color: #A6AAC2; }
+.day-count { font-size: 24rpx; color: #7A7F96; }
 .day-add { font-size: 26rpx; color: #6C7BF5; font-weight: 600; }
 .day-list { display: flex; flex-direction: column; }
 .task-row { display: flex; align-items: flex-start; gap: 14rpx; padding: 18rpx 0;
@@ -669,10 +666,10 @@ onShow(load)
 .task-main { flex: 1; min-width: 0; }
 .t-title-row { display: flex; align-items: center; gap: 10rpx; flex-wrap: wrap; }
 .t-title { font-size: 29rpx; font-weight: 600; color: #3A3F58; }
-.t-note { display: block; font-size: 25rpx; color: #8A90A8; margin-top: 6rpx;
+.t-note { display: block; font-size: 25rpx; color: #6F748C; margin-top: 6rpx;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .t-meta { display: flex; align-items: center; gap: 14rpx; margin-top: 8rpx; }
-.t-time { font-size: 24rpx; color: #8A90A8; }
+.t-time { font-size: 24rpx; color: #6F748C; }
 .t-done-label { font-size: 23rpx; color: #1FA97F; background: #E9F8F2; border-radius: 8rpx;
   padding: 2rpx 10rpx; }
 .pri-tag { font-size: 22rpx; border-radius: 8rpx; padding: 2rpx 10rpx; font-weight: 700; }
@@ -698,8 +695,8 @@ onShow(load)
 .due-over { color: #E45858; font-weight: 700; }
 .due-today { color: #F2A93B; font-weight: 600; }
 .due-soon { color: #6C7BF5; }
-.due-normal { color: #A6AAC2; }
-.due-none { color: #C3C7DA; }
+.due-normal { color: #7A7F96; }
+.due-none { color: #9AA0B5; }
 .pin-btn { font-size: 25rpx; color: #A6AAC2; padding: 6rpx 0 6rpx 10rpx; flex-shrink: 0; }
 .pin-on { color: #6C7BF5; font-weight: 700; }
 
@@ -729,7 +726,7 @@ onShow(load)
 .week-days { flex: 1; display: flex; justify-content: space-between; }
 .day-cell { display: flex; flex-direction: column; align-items: center; gap: 4rpx;
   padding: 10rpx 6rpx; border-radius: 18rpx; min-width: 68rpx; position: relative; }
-.day-wd { font-size: 23rpx; color: #8A90A8; }
+.day-wd { font-size: 23rpx; color: #6F748C; }
 .day-dd { font-size: 30rpx; font-weight: 700; color: #4A4F6B; }
 .day-today .day-dd { color: #8B7FE8; }
 .day-active { background: rgba(139, 127, 232, .16); border: 2rpx dashed #8B7FE8; }
@@ -739,7 +736,7 @@ onShow(load)
   padding: 16rpx 30rpx 4rpx; }
 .notes-head-left { display: flex; flex-direction: column; }
 .notes-date { display: block; font-size: 32rpx; font-weight: 800; color: #4A4F6B; letter-spacing: 1rpx; }
-.notes-sub { display: block; font-size: 25rpx; color: #8A90A8; margin-top: 4rpx; }
+.notes-sub { display: block; font-size: 25rpx; color: #6F748C; margin-top: 4rpx; }
 .notes-head-right { display: flex; align-items: flex-end; gap: 8rpx; }
 .pick-date { font-size: 24rpx; color: #6C7BF5; background: rgba(255,253,248,.75);
   border: 1rpx solid rgba(255,255,255,.8); border-radius: 999rpx; padding: 8rpx 18rpx; }
@@ -750,7 +747,7 @@ onShow(load)
 .note-card:active { opacity: .85; }
 .note-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12rpx; }
 .note-title { font-size: 31rpx; font-weight: 700; color: #3A3F58; }
-.note-time { font-size: 24rpx; color: #A6AAC2; flex-shrink: 0; }
+.note-time { font-size: 24rpx; color: #7A7F96; flex-shrink: 0; }
 /* 长便签自适应：完整换行，不截断 */
 .note-body { display: block; font-size: 27rpx; color: #5A5F78; line-height: 1.8; margin-top: 10rpx;
   white-space: pre-wrap; word-break: break-all; }
