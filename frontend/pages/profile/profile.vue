@@ -1,10 +1,28 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { apiBudget, apiSetBudget, apiUpdateMe, apiProfileStats } from '../../api/index.js'
 import store, { clearLogin } from '../../store/user.js'
+import { BASE_URL } from '../../common/config.js'
 
 const stats = ref({ total_bills: 0, total_days: 0, total_notes: 0, pending_todos: 0 })
+
+// 服务器地址（真机调试时填写电脑局域网 IP）
+const apiOpen = ref(false)
+const apiBase = ref(uni.getStorageSync('api_base') || BASE_URL)
+const apiBaseLabel = computed(() => String(apiBase.value).replace(/^https?:\/\//, ''))
+
+function saveApiBase() {
+  const value = String(apiBase.value || '').trim().replace(/\/+$/, '')
+  if (!/^https?:\/\/.+/.test(value)) {
+    uni.showToast({ title: '请输入 http:// 开头的地址', icon: 'none' })
+    return
+  }
+  uni.setStorageSync('api_base', value)
+  apiBase.value = value
+  apiOpen.value = false
+  uni.showToast({ title: '服务器地址已保存', icon: 'success' })
+}
 
 // 昵称编辑
 const nickname = ref('')
@@ -201,6 +219,19 @@ onShow(() => {
         <view v-if="budgetInfo && Number(budgetInfo.amount) > 0" class="budget-status">
           已支出 ¥{{ Number(budgetInfo.spent).toFixed(2) }} · 剩余 ¥{{ Number(budgetInfo.remaining).toFixed(2) }}
         </view>
+      </view>
+      <view class="menu-item" @click="apiOpen = !apiOpen">
+        <view class="menu-icon" style="background: #F6F4FB"><image class="menu-img" src="/static/icons/act_info.png" mode="widthFix" /></view>
+        <view class="menu-main">
+          <text class="menu-title">服务器地址</text>
+          <text class="menu-sub">{{ apiBaseLabel }}（真机调试用）</text>
+        </view>
+        <text class="menu-arrow">{{ apiOpen ? '⌄' : '›' }}</text>
+      </view>
+      <view v-if="apiOpen" class="expand-form">
+        <input class="input form-input" v-model="apiBase"
+          placeholder="http://192.168.1.100:8000" placeholder-class="ph" />
+        <button class="btn btn-primary form-btn" @click="saveApiBase">保存地址</button>
       </view>
       <view class="menu-item" @click="uni.navigateTo({ url: '/pages/goals/goals' })">
         <view class="menu-icon" style="background: #FFEDEE"><image class="menu-img" src="/static/icons/act_target.png" mode="widthFix" /></view>

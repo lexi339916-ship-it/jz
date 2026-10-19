@@ -2,10 +2,25 @@
 import { ref } from 'vue'
 import { apiLogin } from '../../api/index.js'
 import { setLogin, isLogged } from '../../store/user.js'
+import { BASE_URL } from '../../common/config.js'
 
 const username = ref('')
 const password = ref('')
 const loading = ref(false)
+const apiOpen = ref(false)
+const apiBase = ref(uni.getStorageSync('api_base') || BASE_URL)
+
+function saveApiBase() {
+  const value = String(apiBase.value || '').trim().replace(/\/+$/, '')
+  if (!/^https?:\/\/.+/.test(value)) {
+    uni.showToast({ title: '请输入 http:// 开头的地址', icon: 'none' })
+    return
+  }
+  uni.setStorageSync('api_base', value)
+  apiBase.value = value
+  apiOpen.value = false
+  uni.showToast({ title: '服务器地址已保存', icon: 'success' })
+}
 
 // 已登录直接进入首页
 if (isLogged()) {
@@ -67,6 +82,14 @@ function goRegister() {
       <view class="links">
         <text class="link" @click="goRegister">没有账号？去注册</text>
       </view>
+      <view class="server-row">
+        <text class="server-link" @click="apiOpen = !apiOpen">服务器设置（真机调试用）</text>
+      </view>
+      <view v-if="apiOpen" class="server-edit">
+        <input class="input server-input" v-model="apiBase"
+          placeholder="http://192.168.1.100:8000" placeholder-class="ph" />
+        <button class="server-save" @click="saveApiBase">保存</button>
+      </view>
     </view>
 
     <image class="login-cat" src="/static/doodles/cat.png" mode="widthFix" />
@@ -107,6 +130,12 @@ function goRegister() {
 .ph { color: #C3C7DA; }
 .links { margin-top: 26rpx; text-align: center; }
 .link { color: #6C7BF5; font-size: 27rpx; letter-spacing: 1rpx; }
+.server-row { margin-top: 12rpx; text-align: center; }
+.server-link { color: #A6AAC2; font-size: 24rpx; }
+.server-edit { display: flex; gap: 12rpx; margin-top: 14rpx; }
+.server-input { flex: 1; height: 80rpx; font-size: 26rpx; }
+.server-save { margin: 0; width: 140rpx; height: 80rpx; line-height: 80rpx;
+  font-size: 26rpx; color: #fff; background: #6C7BF5; border-radius: 40rpx; }
 .login-cat { position: fixed; right: 14rpx; bottom: 10rpx; width: 122rpx; opacity: .92; }
 .login-flower { position: fixed; left: 8rpx; bottom: 6rpx; width: 92rpx; opacity: .9; }
 </style>

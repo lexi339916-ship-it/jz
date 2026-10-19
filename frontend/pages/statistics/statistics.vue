@@ -250,7 +250,7 @@ onShow(() => {
 
 /* 环形占比图 */
 .donut-wrap { display: flex; justify-content: center; padding: 30rpx 0 10rpx; }
-.donut { width: 320rpx; height: 320rpx; border-radius: 50%;
+.donut { width: 320rpx; height: 320rpx; border-radius: 50%; background: #EFEDF7;
   display: flex; align-items: center; justify-content: center; }
 .donut-hole { width: 220rpx; height: 220rpx; border-radius: 50%; background: #FFFDF8;
   display: flex; flex-direction: column; align-items: center; justify-content: center;

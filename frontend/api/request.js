@@ -8,11 +8,17 @@ import { BASE_URL } from '../common/config.js'
 import store from '../store/user.js'
 import { clearLogin } from '../store/user.js'
 
+/** 当前生效的后端地址：优先使用本地保存的服务器地址（真机调试用） */
+export function getBaseUrl() {
+  const saved = uni.getStorageSync('api_base')
+  return String(saved || BASE_URL).replace(/\/+$/, '')
+}
+
 function request({ url, method = 'GET', data = {}, header = {} }) {
   return new Promise((resolve, reject) => {
     const token = store.token
     uni.request({
-      url: BASE_URL + url,
+      url: getBaseUrl() + url,
       method,
       data,
       timeout: 35000,

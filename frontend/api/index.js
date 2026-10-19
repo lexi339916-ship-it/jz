@@ -1,6 +1,5 @@
 /** 与后端 REST API 一一对应的接口封装 */
-import http from './request.js'
-import { BASE_URL } from '../common/config.js'
+import http, { getBaseUrl } from './request.js'
 import store from '../store/user.js'
 
 // ---- 认证 ----
@@ -58,7 +57,7 @@ export const apiAsk = (question) => http.post('/api/ai/ask', { question })
 /** 上传支付截图（multipart），返回识别草稿 */
 export const apiParseReceipt = (filePath) => new Promise((resolve, reject) => {
   uni.uploadFile({
-    url: BASE_URL + '/api/ai/parse-receipt',
+    url: getBaseUrl() + '/api/ai/parse-receipt',
     filePath,
     name: 'file',
     timeout: 60000,

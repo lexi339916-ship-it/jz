@@ -31,7 +31,9 @@ smart_life_coursework/
    浏览器打开 http://127.0.0.1:8000/docs 可查看自动生成的接口文档。
 
 2. **启动前端**：用 HBuilderX 导入 `frontend/` 目录，运行到浏览器（H5）或微信开发者工具。
-   后端地址在 `frontend/common/config.js` 中配置（真机调试需改为电脑局域网 IP）。
+   后端地址在 `frontend/common/config.js` 中配置；App 真机调试时可在
+   **登录页 → 服务器设置** 或 **我的 → 服务器地址** 中填写电脑局域网地址，
+   详见 [docs/APK打包说明.md](docs/APK打包说明.md)。
 
 3. **启用 AI 功能**（可选，不配置时系统降级为纯手动记账/便签）：
    ```bash
