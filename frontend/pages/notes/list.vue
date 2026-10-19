@@ -31,8 +31,8 @@ const noteItems = ref([])
 
 // 任务颜色（与编辑页一致）
 const TASK_COLORS = {
-  lilac: '#B9A7FF', sky: '#9DB7F5', mint: '#8FDCC2',
-  peach: '#F6B8A8', sand: '#F2D48A', rose: '#F3B8CB',
+  lilac: '#A78BFA', sky: '#6C9FF0', mint: '#4FC9A4',
+  peach: '#F29A7F', sand: '#E8B44F', rose: '#E8849F',
 }
 function taskColor(c) { return TASK_COLORS[c] || TASK_COLORS.lilac }
 
@@ -393,7 +393,7 @@ onShow(load)
               <text class="cal-num">{{ c.day }}</text>
               <view class="cal-tags" v-if="c.tags.length">
                 <view class="cal-tag" v-for="t in c.tags" :key="t.id"
-                  :style="{ background: taskColor(t.color) + '55' }">
+                  :style="{ background: taskColor(t.color) }">
                   <text class="tag-text">{{ shortTitle(t.title) }}</text>
                 </view>
                 <text v-if="c.more" class="cal-more">+{{ c.more }}</text>
@@ -639,7 +639,7 @@ onShow(load)
 .cal-tag { display: flex; align-items: center; border-radius: 8rpx;
   padding: 2rpx 2rpx; overflow: hidden; max-width: 100%; box-sizing: border-box; }
 .tag-dot { width: 7rpx; height: 7rpx; border-radius: 4rpx; flex-shrink: 0; }
-.tag-text { flex: 1; min-width: 0; font-size: 18rpx; color: #333850; overflow: hidden;
+.tag-text { flex: 1; min-width: 0; font-size: 18rpx; color: #2F3448; font-weight: 600; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; }
 .cal-more { font-size: 20rpx; color: #6F748C; padding-left: 4rpx; }
 
@@ -661,7 +661,7 @@ onShow(load)
   flex-shrink: 0; margin-top: 2rpx; display: flex; align-items: center;
   justify-content: center; color: #fff; font-size: 26rpx; background: rgba(255,253,248,.7); }
 .check.checked { background: #1FA97F; border-color: #1FA97F; }
-.task-color { width: 8rpx; align-self: stretch; border-radius: 4rpx; flex-shrink: 0; margin-top: 2rpx; }
+.task-color { width: 12rpx; align-self: stretch; border-radius: 6rpx; flex-shrink: 0; margin-top: 2rpx; }
 .task-main { flex: 1; min-width: 0; }
 .t-title-row { display: flex; align-items: center; gap: 10rpx; flex-wrap: wrap; }
 .t-title { font-size: 29rpx; font-weight: 600; color: #3A3F58; }
